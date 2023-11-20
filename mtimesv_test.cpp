@@ -26,6 +26,8 @@ void matrxToPipelined(data_t dest[M*N], data_t source[M*N])
 
 void gold(data_t C[M], data_t A[M*N], data_t B[N])
 {
+	unsigned i,j,k;
+	data_t acc, x;
 	LOOP_M: for(i=0, k=0; i < M; i++)
 	{
 		acc = 0;
