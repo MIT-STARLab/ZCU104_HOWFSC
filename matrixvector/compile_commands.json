@@ -1,0 +1,30 @@
+[
+  {
+    "directory": "D:\\projects\\HLS\\matrixvector",
+    "arguments": [
+      "D:\\Xilinx\\Vitis_HLS\\2023.2\\tps\\win64\\msys64\\mingw64\\bin\\g++",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\include",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\include\\etc",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\include\\ap_sysc",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\win64\\tools\\auto_cc\\include",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\win64\\tools\\systemc\\include",
+      "--compile",
+      "D:\\projects\\HLS\\matrixvector\\matrixvector.cpp"
+    ],
+    "file": "D:\\projects\\HLS\\matrixvector\\matrixvector.cpp"
+  },
+  {
+    "directory": "D:\\projects\\HLS\\matrixvector",
+    "arguments": [
+      "D:\\Xilinx\\Vitis_HLS\\2023.2\\tps\\win64\\msys64\\mingw64\\bin\\g++",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\include",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\include\\etc",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\include\\ap_sysc",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\win64\\tools\\auto_cc\\include",
+      "-isystemD:\\Xilinx\\Vitis_HLS\\2023.2\\win64\\tools\\systemc\\include",
+      "--compile",
+      "D:\\projects\\HLS\\matrixvector\\matrixvector.h"
+    ],
+    "file": "D:\\projects\\HLS\\matrixvector\\matrixvector.h"
+  }
+]
