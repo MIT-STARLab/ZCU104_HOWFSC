@@ -4,8 +4,9 @@
 using namespace std;
 // #include "hls_stream.h"
 // #include "ap_int.h"
+#define NUM_ITERATIONS 2
 
-inline data_t at(data_t *A,unsigned M, unsigned N, unsigned i,unsigned j, bool rowmajor = true)
+inline data_t at(const data_t *A,unsigned M, unsigned N, unsigned i,unsigned j, bool rowmajor = true)
 {
   return rowmajor ? A[i*N+j] : A[j*M+i] ;
 }
@@ -15,14 +16,14 @@ inline void set(data_t *A,unsigned M, unsigned N, unsigned i,unsigned j,data_t x
   A[rowmajor ? i*N+j : j*M+i] = x; 
 }
 
-void normalMatrixToRake(data_t *A, data_t *R, unsigned M, unsigned N, unsigned K, bool rowmajor = true)
+void normalMatrixToRake(const data_t *A, data_t *R, unsigned M, unsigned N, unsigned K, bool rowmajor = true)
 {
     for (unsigned i=0; i<M; i++)
 	for (unsigned j=0; j<N; j++)
 	R[i%K + j*K + (i/K)*(K*N)] = at(A,M,N,i,j,rowmajor);
 }
 
-void rakeToNormalMatrix(data_t *A, data_t *R, unsigned M, unsigned N, unsigned K, bool rowmajor = true)
+void rakeToNormalMatrix(data_t *A, const data_t *R, unsigned M, unsigned N, unsigned K, bool rowmajor = true)
 {
     for (unsigned x=0; x<N*M; x++)
     {
@@ -74,11 +75,11 @@ int main()
     unsigned i,j;
     bool printDebug = MATRIX_ROWS*MATRIX_COLS < 100;
     // C = A * B
-    data_t A[MATRIX_ROWS*MATRIX_COLS];
-    data_t R[MATRIX_ROWS*MATRIX_COLS];
-    data_t B[MATRIX_COLS];
-    data_t C[MATRIX_ROWS];
-    data_t C2[MATRIX_ROWS];
+    data_t A[ALLOC_SIZE(MATRIX_ROWS*MATRIX_COLS)];
+    data_t R[ALLOC_SIZE(MATRIX_ROWS*MATRIX_COLS)];
+    data_t B[ALLOC_SIZE(MATRIX_COLS)];
+    data_t C[ALLOC_SIZE(MATRIX_ROWS)];
+    data_t C2[ALLOC_SIZE(MATRIX_ROWS)];
 
     data_t y = 1;
 
@@ -105,7 +106,7 @@ int main()
     // hardware version
     for(i=0; i<NUM_ITERATIONS; i++) 
         matrixvector(C,R,B);
-        
+
     if (printDebug) printVector(C2,MATRIX_COLS);
     if (printDebug) printVector(C,MATRIX_COLS);
 

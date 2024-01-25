@@ -21,7 +21,8 @@ set hls_exec 2
 
 csim_design
 # Set any optimization directives
-#set_directive_pipeline krnl_vadd/mem_rd
+
+
 # End of directives
 
 if {$hls_exec == 1} {
@@ -30,13 +31,11 @@ if {$hls_exec == 1} {
 	
 } elseif {$hls_exec == 2} {
 	# Run Synthesis, RTL Simulation and Exit
-	csynth_design
-	
+	csynth_design	
 	cosim_design
 } elseif {$hls_exec == 3} { 
 	# Run Synthesis, RTL Simulation, RTL implementation and Exit
-	csynth_design
-	
+	csynth_design	
 	cosim_design
 	export_design
 } else {
