@@ -5,6 +5,8 @@
 
 //column-major A, in blocks of size RAKEWIDTH
 //C = A * B
+//16 and 8 about the same speed, 32 slightly slower 
+const int pfactor = 8;
 const int csize = MATRIX_ROWS*MATRIX_COLS;
 #if STREAMING
 extern "C" void do_calc(hls::stream<data_t>& C, hls::stream<data_t>& A, hls::stream<data_t>& B)
@@ -19,19 +21,20 @@ extern "C" void matrixvector(data_t C[MATRIX_ROWS], const data_t A[MATRIX_ROWS*M
 
 #if STREAMING
 #else //depth is for the simulation to know how big a fifo to have
-#pragma HLS INTERFACE m_axi port=C bundle=gmem0 depth=csize
-#pragma HLS INTERFACE m_axi port=A bundle=gmem1 depth=csize
-#pragma HLS INTERFACE m_axi port=B bundle=gmem0 depth=csize
-#pragma HLS ARRAY_PARTITION variable=A factor=8 type=cyclic 
-#pragma HLS ARRAY_PARTITION variable=B factor=8 type=cyclic 
-#pragma HLS ARRAY_PARTITION variable=C factor=8 type=cyclic 
-    // #pragma HLS INTERFACE mode=ap_memory port=A
-    // #pragma HLS INTERFACE mode=ap_memory port=B
-    // #pragma HLS INTERFACE mode=ap_memory port=C
+// ap_memory  (default chosen by compiler) is faster than m_axi 
+// #pragma HLS INTERFACE m_axi port=C bundle=gmem0 depth=csize
+// #pragma HLS INTERFACE m_axi port=A bundle=gmem1 depth=csize
+// #pragma HLS INTERFACE m_axi port=B bundle=gmem0 depth=csize
+#pragma HLS ARRAY_PARTITION variable=A factor=pfactor type=cyclic 
+#pragma HLS ARRAY_PARTITION variable=B factor=pfactor type=cyclic 
+#pragma HLS ARRAY_PARTITION variable=C factor=pfactor type=cyclic 
+// #pragma HLS INTERFACE mode=ap_memory port=A
+// #pragma HLS INTERFACE mode=ap_memory port=B
+// #pragma HLS INTERFACE mode=ap_memory port=C
 #endif
 	LOOP_PRELOAD: for(j=0; j < MATRIX_COLS; j++)
     {
-#pragma HLS UNROLL factor=8
+#pragma HLS UNROLL factor=pfactor
 #if STREAMING
     	ram[j] = B.read();
 #else
@@ -49,12 +52,12 @@ extern "C" void matrixvector(data_t C[MATRIX_ROWS], const data_t A[MATRIX_ROWS*M
 	
 		LOOP_OUTER: for(j=0; j < MATRIX_COLS; j++) 
 		{
-//#pragma HLS pipeline II=1  
+#pragma HLS pipeline II=1 //this really speeds it up! 
             data_t x = ram[j]; // helps the compiler unroll around l instead of perceiving conflicts with j
             LOOP_INNER: for (l=0; l < MATRIX_RAKE; l++, k++)
             {
 #pragma HLS PIPELINE II=1
-#pragma HLS UNROLL factor=8
+#pragma HLS UNROLL factor=pfactor
 #if STREAMING
 				cache[l] += A.read() * x;
 #else
@@ -86,7 +89,7 @@ static void load_input(const data_t* in, hls::stream<data_t>& inStream, unsigned
 
     mem_rd:  for (i = 0; i < size; i++) 
     {
-#pragma HLS UNROLL factor=8
+#pragma HLS UNROLL factor=8 // 8 * sizeof(double) = 512 bits
             inStream << in[i];
             // for (j=0; j< NUM_WORDS; j++) inStream << x.d[j];
     }
