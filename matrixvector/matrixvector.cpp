@@ -6,7 +6,9 @@
 //column-major A, in blocks of size RAKEWIDTH
 //C = A * B
 //16 and 8 about the same speed, 32 slightly slower 
-const int pfactor = 8;
+const int pfactor = 8; // must be a factor of the number of columns. 8 or more are fastest because that moves 512 bits across memory
+//changing this from 8 to 16 saves 1 clock cycle and uses a lot more flip-flops and LUTs
+const int rfactor = MATRIX_RAKE/2;
 const int csize = MATRIX_ROWS*MATRIX_COLS;
 #if STREAMING
 extern "C" void do_calc(hls::stream<data_t>& C, hls::stream<data_t>& A, hls::stream<data_t>& B)
@@ -46,7 +48,7 @@ extern "C" void matrixvector(data_t C[MATRIX_ROWS], const data_t A[MATRIX_ROWS*M
 	{
 		LOOP_STARTUP: for(j=0; j < MATRIX_RAKE; j++) 
         {
-#pragma HLS UNROLL
+#pragma HLS UNROLL //better without telling it how to unroll
             cache[j] = 0.0;
         }
 	
@@ -55,9 +57,9 @@ extern "C" void matrixvector(data_t C[MATRIX_ROWS], const data_t A[MATRIX_ROWS*M
 #pragma HLS pipeline II=1 //this really speeds it up! 
             data_t x = ram[j]; // helps the compiler unroll around l instead of perceiving conflicts with j
             LOOP_INNER: for (l=0; l < MATRIX_RAKE; l++, k++)
-            {
+            {//pipeline + 1/2 unroll seems to 
 #pragma HLS PIPELINE II=1
-#pragma HLS UNROLL factor=pfactor
+// #pragma HLS UNROLL factor=rfactor //pipeline only has the same resources and timing as partial unrolling -- 88 dsps are all that's needed
 #if STREAMING
 				cache[l] += A.read() * x;
 #else

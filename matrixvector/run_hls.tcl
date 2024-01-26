@@ -1,5 +1,5 @@
 # Create a project
-open_project -reset proj_matrixvector_kernel
+open_project -reset mv_kernel
 
 # Add design files
 add_files matrixvector.cpp
