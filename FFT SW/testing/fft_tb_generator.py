@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Parameters
-FFT_LENGTH = 2**10
+FFT_LENGTH = 2**11
 sampling_interval = 0.01
 
 # Time array
@@ -29,14 +29,27 @@ y = np.fft.fft(x)
 
 # Save x and y to CSV
 data = np.column_stack((x_real, x_imag, y.real, y.imag))  # Combine x_real, x_imag, real part of y, and imaginary part of y
-np.savetxt('ftt_tb_data_amd.csv', data, delimiter=',', header='x_real, x_imag, y_real, y_imag', comments='')
+np.savetxt('fft_testing_data.csv', data, delimiter=',', header='x_real, x_imag, y_real, y_imag', comments='')
 
-# Plotting (optional)
+# # Plotting (optional)
 # plt.figure(figsize=(10, 6))
 # plt.plot(t, x_real, label='Signal x_real')
 # plt.legend()
 # plt.xlabel('Time')
 # plt.ylabel('Amplitude')
 # plt.title('Signal x_real vs Time')
+# plt.grid(True)
+# plt.show()
+
+# Compute frequency array
+frequencies = np.fft.fftfreq(FFT_LENGTH, d=sampling_interval)
+
+# # Plotting FFT magnitude
+# plt.figure(figsize=(10, 6))
+# plt.plot(t, y.imag, label='FFT Magnitude')  # Plot only the positive frequencies
+# plt.legend()
+# plt.xlabel('Frequency (Hz)')
+# plt.ylabel('Magnitude')
+# plt.title('FFT Magnitude vs Frequency')
 # plt.grid(True)
 # plt.show()
