@@ -44,3 +44,40 @@ Notice how the total latency of the kernel is almost the same as the latency of 
   - This warning disappears when we stop the pipeline inside the loops. However, it is not causing any problems.
 
 Other warnings do not seem important.
+
+
+## Hardware Deployment Results
+```sh
+zynqmp-common-20232:~$ ls
+BOOT.BIN  Image  binary_container_1.xclbin  boot.scr  vadd_host_xrt
+
+zynqmp-common-20232:~$ ./vadd_host_xrt binary_container_1.xclbin
+INFO:    DATA size in words  = 4096
+INFO:    DATA size in bytes  = 32768
+PASSED:  auto my_device = xrt::device(0)
+PASSED:  auto xclbin_uuid = my_device.load_xclbin(binary_container_1.xclbin)
+PASSED:  auto krnl = xrt::kernel(my_device, xclbin_uuid, "krnl_vadd:{krnl_vadd_1}")
+INFO:    Allocate Buffers in Global Memory
+PASSED:  auto bo0 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(0) (=4))
+PASSED:  auto bo1 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(1) (=4))
+PASSED:  auto bo2 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(2) (=4))
+PASSED:  auto bo0_map = bo0.map<data_t*>()
+PASSED:  auto bo1_map = bo1.map<data_t*>()
+PASSED:  auto bo2_map = bo2_map<data_t*>()
+INFO:    Creating random input data
+INFO:    synchronize input buffer data to device global memory
+PASSED:  bo0.sync(XCL_BO_SYNC_BO_TO_DEVICE)
+PASSED:  bo1.sync(XCL_BO_SYNC_BO_TO_DEVICE)
+INFO:    Execution of the kernel
+
+INFO:    Waiting for kernels to end...
+
+PASSED:  run.wait()
+PASSED:  bo2.sync(XCL_BO_SYNC_BO_FROM_DEVICE)
+Time total 0.000301 load 0.000039 run 0.000248 readout 0.000014
+INFO:    Checking the results
+TEST PASSED
+
+zynqmp-common-20232:~$
+```
+
