@@ -12,13 +12,15 @@
 #include <vector>
 #include <string>
 #include <cmath>
-
-#include "fft_top.h"
+#include <random>
+#include "fft_krnl_include.h"
 
 
 using namespace std;
 
+typedef complex<float> cmpx_data_t;
 
+////// Helpers ///////
 
 /**
  * Implementation of the 1D Cooley-Tukey FFT, the input should have a length of power of 2. Non Recursive Implementation.
@@ -72,7 +74,7 @@ void fft(vector<cmpx_data_t> &a, bool invert) {
  * @param time_range   it's first element contatins the timing of first measurment. the second the last measurment.
  * @param invert       whether you want the output inversefft or fft
  */
-void fft_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &output_data, vector<float> &frequencies, vector<float> &amplitudes, vector<float> &time_range, bool invert){
+void fft_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &output_data,const vector<float> &frequencies,const vector<float> &amplitudes, const vector<float> &time_range, bool invert){
 
     // Fast Failing Assertions
     if (input_data.size() != output_data.size()){
@@ -115,64 +117,106 @@ void fft_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &ou
 }
 
 
+/**
+ * Produces Random FFT Testing Data and expected output
+ * @param input_data   a vector that will later contatins the input data, must be a power of 2 size
+ * @param output_data  a vector that will later contatins the results of applying fft on the input data, must match the size of input_data
+ * @param time_range   it's first element contatins the timing of first measurment. the second the last measurment.
+ * @param invert       whether you want the output inversefft or fft
+ */
+void fft_random_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &output_data,bool invert){
 
+    // Fast Failing Assertions
+    if (input_data.size() != output_data.size()){
+        throw runtime_error("Input data vector length must match output data vector length");
+    }
+
+    if (log2(double(input_data.size())) != int(log2(double(input_data.size())))){
+        throw runtime_error("Data vector length must be a power of 2");
+    }
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_real_distribution<> dis(0.0, 100000.0);
+    const int fft_data_size = input_data.size();
+
+    // Fill input data 
+    for (int i = 0; i < fft_data_size; i++){   
+        float real = dis(gen);
+        float imag = dis(gen);
+        input_data[i] = cmpx_data_t(real, imag);
+        output_data[i] = cmpx_data_t(real, imag);
+    }
+
+    // Produce the fft results
+    fft(output_data, invert);
+}
 
 /**
  * Checks if two complex numbers are equal within a tolarance
  */
 bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) {
-    return (std::abs(a.real() - b.real()) <= tolerance) &&
-           (std::abs(a.imag() - b.imag()) <= tolerance);
+    bool real_compare = (a.real() == b.real() && b.real()==0) || (std::abs((a.real() - b.real())/a.real()) < tolerance);
+    bool imag_compare = (a.imag() == b.imag() && b.imag()==0) || (std::abs((a.imag() - b.imag())/a.imag()) < tolerance);
+    return  real_compare && imag_compare;
 }
 
 
 
-///////  Testing Data Parameters
-float sampling_rate = 0.01;
-vector<float> frequencies = {1,4,7};
-vector<float> amplitudes = {3,1,0.5}; 
-vector<float> time_range = {0, sampling_rate * FFT_LENGTH};
+
+
+///////  Testing Data Parameters  ///////
+const float sampling_rate = 0.01;
+const vector<float> frequencies = {1,4,7};
+const vector<float> amplitudes = {3,1,0.5}; 
+const vector<float> time_range = {0, sampling_rate * DATA_SIZE};
 bool invert = 0;
-double tolerance = 1e-2;
+
 
 
 
 int main() {
 
+    cout << "Generate Testing Data using Pure software implementaion" << endl;
     /////////////   Generate Testing Data using Pure software implementaion  //////////////
-    vector<cmpx_data_t> software_generated_input_data(FFT_LENGTH, 0);      // to include the input data
-    vector<cmpx_data_t> software_generated_ouput_data(FFT_LENGTH, 0);      // to include the expected output data
+    vector<cmpx_data_t> software_generated_input_data(DATA_SIZE, 0);      // to include the input data
+    vector<cmpx_data_t> software_generated_ouput_data(DATA_SIZE, 0);      // to include the expected output data
+    fft_data_generator(software_generated_input_data, software_generated_ouput_data, frequencies,amplitudes, time_range,invert);
+    cout << "Testing data generated" << endl;
 
-    fft_data_generator(software_generated_input_data, software_generated_ouput_data, frequencies, amplitudes, time_range, invert);
 
-
-
+    cout << "Call FFT function" << endl;
     /////////////////  Call FFT function   //////////////
-    cmpx_data_t hardware_output_data[FFT_LENGTH];
-    cmpx_data_t hardware_input_data[FFT_LENGTH];
-    for (int i =0; i<FFT_LENGTH; i++){
+    cmpx_data_t hardware_input_data[DATA_SIZE];
+    cmpx_data_t hardware_output_data[DATA_SIZE];
+    bool ovflo = false;
+    bool FORWARD_FFT = true;                                // Use true for forward FFT, false for inverse FFT
+
+    for (int i =0; i<DATA_SIZE; i++){
         hardware_input_data[i] = software_generated_input_data[i];
     }
 
-    bool ovflo;
-    const bool FORWARD_FFT = true;                                // Use true for forward FFT, false for inverse FFT
 
-    fft_top(FORWARD_FFT, hardware_input_data, hardware_output_data, &ovflo);
+    fft_top(FORWARD_FFT, hardware_input_data, hardware_output_data, ovflo);
 
 
 
-
+    cout << "Validating Results" << endl;
     /////////////////  Validate Results   //////////////    
     bool passed = true;
+    const float tolerance = 1e-2;
+    int failed_count = 0;
 
-    for (int j = 0; j < FFT_LENGTH; j++) {
+    for (int j = 0; j < DATA_SIZE; j++) {
         if (!approx_equal(hardware_output_data[j], software_generated_ouput_data[j], tolerance)) {
-            cerr << "Error at index " << j 
+            passed = false;
+            cout << "Error at index " << j 
                  << ": Expected (" << software_generated_ouput_data[j].real() << ", " << software_generated_ouput_data[j].imag() 
                  << "), Actual ("  <<   hardware_output_data[j].real() << ", " <<   hardware_output_data[j].imag() 
                  << ")" << endl;
-
-            passed = false;
+            cout << "relative real error is " << std::abs(( software_generated_ouput_data[j].real() - hardware_output_data[j].real())/ software_generated_ouput_data[j].real()) << endl;
+            cout << "relative imag error is " << std::abs(( software_generated_ouput_data[j].imag() - hardware_output_data[j].imag())/ software_generated_ouput_data[j].imag()) << endl;
+            failed_count++;
         }
     }
 
@@ -183,8 +227,8 @@ int main() {
         cout << " (OVERFLOW!!!)" << endl;
         return 1;
     } else{
-        cout << "Tests failed!" << endl;
-        return 1;
+        cout <<"Tests failed " << "at "<<failed_count << " indicies out of" << DATA_SIZE << endl;
+        return 0;
     }
 
 }

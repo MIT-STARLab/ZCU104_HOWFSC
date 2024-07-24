@@ -15,7 +15,7 @@
 
 using namespace std;
 
-typedef complex<double> cmpx_data_t;
+typedef complex<float> cmpx_data_t;
 
 
 /**
