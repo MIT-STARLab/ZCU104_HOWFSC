@@ -57,10 +57,11 @@ void fft(vector<cmpx_data_t> &a, bool invert) {
         }
     }
 
-    if (invert) {
-        for (cmpx_data_t & x : a)
-            x /= n;
-    }
+    // The hardware FFT IP doesn't scale for inverse also
+    // if (invert) {
+    //     for (cmpx_data_t & x : a)
+    //         x /= n;
+    // }
 }
 
 
@@ -117,40 +118,6 @@ void fft_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &ou
 }
 
 
-/**
- * Produces Random FFT Testing Data and expected output
- * @param input_data   a vector that will later contatins the input data, must be a power of 2 size
- * @param output_data  a vector that will later contatins the results of applying fft on the input data, must match the size of input_data
- * @param time_range   it's first element contatins the timing of first measurment. the second the last measurment.
- * @param invert       whether you want the output inversefft or fft
- */
-void fft_random_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &output_data,bool invert){
-
-    // Fast Failing Assertions
-    if (input_data.size() != output_data.size()){
-        throw runtime_error("Input data vector length must match output data vector length");
-    }
-
-    if (log2(double(input_data.size())) != int(log2(double(input_data.size())))){
-        throw runtime_error("Data vector length must be a power of 2");
-    }
-
-    random_device rd;
-    mt19937 gen(rd());
-    uniform_real_distribution<> dis(0.0, 100000.0);
-    const int fft_data_size = input_data.size();
-
-    // Fill input data 
-    for (int i = 0; i < fft_data_size; i++){   
-        float real = dis(gen);
-        float imag = dis(gen);
-        input_data[i] = cmpx_data_t(real, imag);
-        output_data[i] = cmpx_data_t(real, imag);
-    }
-
-    // Produce the fft results
-    fft(output_data, invert);
-}
 
 /**
  * Checks if two complex numbers are equal within a tolarance
@@ -163,15 +130,26 @@ bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) 
 
 
 
+/**
+ * Writes complex data vector to files
+ */
+void write_to_file(const vector<cmpx_data_t>& data, const string& filename) {
+    ofstream outfile(filename);
+    for (const auto& val : data) {
+        outfile << val.real() << " " << val.imag() << endl;
+    }
+    outfile.close();
+}
+
+
 
 
 ///////  Testing Data Parameters  ///////
 const float sampling_rate = 0.01;
-const vector<float> frequencies = {1,4,7};
-const vector<float> amplitudes = {3,1,0.5}; 
+const vector<float> frequencies = {0.97, 10.44 , 50.44}; // {20 * fund_freq, 250 * fund_freq,  1000 * fund_freq};
+const vector<float> amplitudes = {203,124,34};
 const vector<float> time_range = {0, sampling_rate * DATA_SIZE};
-bool invert = 0;
-
+bool invert = 1;
 
 
 
@@ -182,6 +160,10 @@ int main() {
     vector<cmpx_data_t> software_generated_input_data(DATA_SIZE, 0);      // to include the input data
     vector<cmpx_data_t> software_generated_ouput_data(DATA_SIZE, 0);      // to include the expected output data
     fft_data_generator(software_generated_input_data, software_generated_ouput_data, frequencies,amplitudes, time_range,invert);
+
+    cout << "Saving Testing Data to files software_input.txt, software_ouput.txt" << endl;
+    write_to_file(software_generated_input_data, "software_input.txt");
+    write_to_file(software_generated_ouput_data, "software_output.txt");
     cout << "Testing data generated" << endl;
 
 
@@ -190,15 +172,19 @@ int main() {
     cmpx_data_t hardware_input_data[DATA_SIZE];
     cmpx_data_t hardware_output_data[DATA_SIZE];
     bool ovflo = false;
-    bool FORWARD_FFT = true;                                // Use true for forward FFT, false for inverse FFT
+    bool FORWARD_FFT = false;                                // Use true for forward FFT, false for inverse FFT
 
     for (int i =0; i<DATA_SIZE; i++){
         hardware_input_data[i] = software_generated_input_data[i];
     }
 
-
     fft_top(FORWARD_FFT, hardware_input_data, hardware_output_data, ovflo);
 
+    ofstream hardware_output_file("hardware_output.txt");
+    for (int i = 0; i < DATA_SIZE; i++) {
+        hardware_output_file << hardware_output_data[i].real() << " " << hardware_output_data[i].imag() << endl;
+    }
+    hardware_output_file.close();
 
 
     cout << "Validating Results" << endl;
@@ -227,7 +213,7 @@ int main() {
         cout << " (OVERFLOW!!!)" << endl;
         return 1;
     } else{
-        cout <<"Tests failed " << "at "<<failed_count << " indicies out of" << DATA_SIZE << endl;
+        cout <<"Tests failed " << "at "<<failed_count << " indicies out of" << DATA_SIZE << endl << endl;
         return 0;
     }
 

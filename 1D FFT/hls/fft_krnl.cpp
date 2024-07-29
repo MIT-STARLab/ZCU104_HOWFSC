@@ -17,7 +17,7 @@ static void input_data_mover(const bool direction, hls::stream<config_t> &config
     //////  Load the runtime configuration to the configuration stream that is going to the FFT module; includes direction, scalings
     config_t config;
     config.setDir(direction);
-    // config.setSch(0x2AB);             // not required in case of unscaled FFT
+    // config.setSch(0x2AB);             // not required in case of float or unscaled FFT
     config_s << config;
 
 
@@ -40,8 +40,8 @@ static void output_data_mover(hls::stream<status_t>  &runtime_status_stream, boo
     }
 
     status_t status_in = runtime_status_stream.read();
-    ovflo = status_in.getOvflo() & 0x1;    
-    // ovflo = false;
+    // ovflo = status_in.getOvflo() & 0x1;    
+    ovflo = false;
 }
 
 

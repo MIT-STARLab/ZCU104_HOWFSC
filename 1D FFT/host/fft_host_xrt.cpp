@@ -55,12 +55,10 @@ static const char*    STR_USAGE   = "USAGE:   ";
 
 ///////  Testing Data Parameters  ///////
 float sampling_rate = 0.01;
-std::vector<float> frequencies = {1,4,7};
-std::vector<float> amplitudes = {3,1,0.5}; 
+std::vector<float> frequencies = {0.97, 10.44 , 50.44}; // {20 * fund_freq, 250 * fund_freq,  1000 * fund_freq};
+std::vector<float> amplitudes = {203,124,34};
 std::vector<float> time_range = {0, sampling_rate * DATA_SIZE};
-bool invert = 0;
-
-
+bool invert = 1;
 
 
 
