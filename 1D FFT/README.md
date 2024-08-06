@@ -31,13 +31,10 @@ The data in the test bench was saved to files to be plotted using the [python sc
 
 ## Hardware Deployment Results
 ```sh
-zynqmp-common-20232:~$
-zynqmp-common-20232:~$ ./fft_host binary_container_1.xclbin 10
-
+zynqmp-common-20232:~$ ./fft_host binary_container_1.xclbin 
 PASSED:    auto my_device = xrt::device(0)
 PASSED:    auto xclbin_uuid = my_device.load_xclbin(binary_container_1.xclbin)
 PASSED:    auto krnl = xrt::kernel(my_device, xclbin_uuid, "fft_top:{fft_top_1}")
-
 INFO:  Allocate Buffers in Global Memory
 INFO:  DATA size in words  = 4096
 INFO:  DATA size in bytes  = 16384
@@ -45,14 +42,11 @@ PASSED:    auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, 
 PASSED:    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(2)) (=4))
 PASSED:    auto bo_input_map  = bo_input.map<cmpx_data_t*>()
 PASSED:    auto bo_output_map = bo_output.map<cmpx_data_t*>()
-
 INFO:  Generating Testing Data...
 PASSED:    Testing Data Generated
 INFO:  Filling Argument Buffers with input data
-
 INFO:  Running on CPU First
 PASSED:    CPU Done
-
 INFO:  synchronize input buffer data to device global memory
 PASSED:    bo_input.sync(XCL_BO_SYNC_BO_TO_DEVICE)
 INFO:  Execution of the kernel
@@ -61,190 +55,173 @@ INFO:  Waiting for kernels to end...
 
 PASSED:    run.wait()
 PASSED:    bo_output.sync(XCL_BO_SYNC_BO_FROM_DEVICE)
-
 INFO:  Start Validation
-Error   Results Mismatch:
+Error:  Results Mismatch:
         Index i = 1748; CPU Results (0.279671, 399.066528); Device Result (0.276428, 399.059631)
         Relative error in real component = 0.011594
         Relative error in imag component = 0.000017
-
 RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 4.57271e-05
 RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.69106e-05
-FAILED: Validation; test failed at 1 indicies out of 2048
-**************************   Timing Summary **************************
+FAILED: Validation; test failed at 1indicies out of 2048
+Timing Summary For Round:
+-------------------------
 Data Size           =   2048
-Total CPU Time      =   0.003783
-Total FPGA Time     =   0.000267
+Total CPU Time      =   0.003786
+Total FPGA Time     =   0.000276
 ->Input Load Time   =   0.000014
-->Excution Time     =   0.000217
+->Excution Time     =   0.000227
 ->Output Load Time  =   0.000004
-***********************************************************************
-
 INFO:  RUN KERNEL NUMBER OF TIMES =  10
-
 INFO:  STATING ROUND : 0
 INFO:  Start Validation
-Error:  Results Mismatch:
-        Index i = 147; CPU Results (17556.531250, 1.573242); Device Result (17556.517578, 1.600830)
-        Relative error in real component = 0.000001
-        Relative error in imag component = 0.017536
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.00418e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.23513e-05
-FAILED: Validation; test failed at 1indicies out of 2048
-**************************   Timing Summary **************************
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 8.77251e-06
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.07964e-05
+PASSED:    Validation; data at all indicies match
+Timing Summary For Round:
+-------------------------
 Data Size           =   2048
-Total CPU Time      =   0.003792
-Total FPGA Time     =   0.000108
+Total CPU Time      =   0.003784
+Total FPGA Time     =   0.000110
 ->Input Load Time   =   0.000005
-->Excution Time     =   0.000098
+->Excution Time     =   0.000099
 ->Output Load Time  =   0.000004
-***********************************************************************
-
 INFO:  STATING ROUND : 1
 INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 2.08419e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.50779e-05
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 8.17532e-06
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.51737e-05
 PASSED:    Validation; data at all indicies match
-**************************   Timing Summary **************************
-Data Size           =   2048
-Total CPU Time      =   0.003772
-Total FPGA Time     =   0.000109
-->Input Load Time   =   0.000004
-->Excution Time     =   0.000100
-->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 2
-INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.25822e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.21944e-05
-PASSED:    Validation; data at all indicies match
-**************************   Timing Summary **************************
-Data Size           =   2048
-Total CPU Time      =   0.003781
-Total FPGA Time     =   0.000107
-->Input Load Time   =   0.000004
-->Excution Time     =   0.000097
-->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 3
-INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.08558e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.13566e-05
-PASSED:    Validation; data at all indicies match
-**************************   Timing Summary **************************
-Data Size           =   2048
-Total CPU Time      =   0.003796
-Total FPGA Time     =   0.000107
-->Input Load Time   =   0.000004
-->Excution Time     =   0.000097
-->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 4
-INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 8.31326e-06
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.04797e-05
-PASSED:    Validation; data at all indicies match
-**************************   Timing Summary **************************
-Data Size           =   2048
-Total CPU Time      =   0.003782
-Total FPGA Time     =   0.000106
-->Input Load Time   =   0.000004
-->Excution Time     =   0.000097
-->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 5
-INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.25544e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.0356e-05
-PASSED:    Validation; data at all indicies match
-**************************   Timing Summary **************************
+Timing Summary For Round:
+-------------------------
 Data Size           =   2048
 Total CPU Time      =   0.003780
-Total FPGA Time     =   0.000107
-->Input Load Time   =   0.000004
-->Excution Time     =   0.000097
-->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 6
-INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.57015e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.07352e-05
-PASSED:    Validation; data at all indicies match
-**************************   Timing Summary **************************
-Data Size           =   2048
-Total CPU Time      =   0.003783
-Total FPGA Time     =   0.000107
-->Input Load Time   =   0.000004
-->Excution Time     =   0.000097
-->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 7
-INFO:  Start Validation
-Error:  Results Mismatch:
-        Index i = 891; CPU Results (-5198.112793, 5.483093); Device Result (-5198.113770, 5.416473)
-        Relative error in real component = 0.000000
-        Relative error in imag component = 0.012150
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 9.40051e-06
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.94657e-05
-FAILED: Validation; test failed at 1indicies out of 2048
-
-**************************   Timing Summary **************************
-Data Size           =   2048
-Total CPU Time      =   0.003779
 Total FPGA Time     =   0.000106
 ->Input Load Time   =   0.000004
 ->Excution Time     =   0.000096
 ->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 8
+INFO:  STATING ROUND : 2
+INFO:  Start Validation
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.94198e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 9.47296e-06
+PASSED:    Validation; data at all indicies match
+Timing Summary For Round:
+-------------------------
+Data Size           =   2048
+Total CPU Time      =   0.003778
+Total FPGA Time     =   0.000103
+->Input Load Time   =   0.000004
+->Excution Time     =   0.000094
+->Output Load Time  =   0.000004
+INFO:  STATING ROUND : 3
 INFO:  Start Validation
 Error:  Results Mismatch:
-        Index i = 1944; CPU Results (0.053711, 7781.453613); Device Result (0.087036, 7781.503418)
-        Relative error in real component = 0.620455
-        Relative error in imag component = 0.000006
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 0.000327228
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.10576e-05
+        Index i = 899; CPU Results (0.830566, -25211.890625); Device Result (0.819305, -25211.949219)
+        Relative error in real component = 0.013558
+        Relative error in imag component = 0.000002
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.6571e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.01423e-05
 FAILED: Validation; test failed at 1indicies out of 2048
-
-**************************   Timing Summary **************************
+Timing Summary For Round:
+-------------------------
 Data Size           =   2048
-Total CPU Time      =   0.003780
-Total FPGA Time     =   0.000107
+Total CPU Time      =   0.003781
+Total FPGA Time     =   0.000105
 ->Input Load Time   =   0.000004
-->Excution Time     =   0.000098
+->Excution Time     =   0.000095
 ->Output Load Time  =   0.000004
-***********************************************************************
-
-INFO:  STATING ROUND : 9
+INFO:  STATING ROUND : 4
 INFO:  Start Validation
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.32928e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.19009e-05
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 2.33289e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 8.71842e-06
 PASSED:    Validation; data at all indicies match
-
-**************************   Timing Summary **************************
+Timing Summary For Round:
+-------------------------
 Data Size           =   2048
-Total CPU Time      =   0.003779
-Total FPGA Time     =   0.000106
+Total CPU Time      =   0.003778
+Total FPGA Time     =   0.000105
+->Input Load Time   =   0.000004
+->Excution Time     =   0.000095
+->Output Load Time  =   0.000004
+INFO:  STATING ROUND : 5
+INFO:  Start Validation
+Error:  Results Mismatch:
+        Index i = 883; CPU Results (0.373535, -16153.089844); Device Result (0.334122, -16153.177734)
+        Relative error in real component = 0.105515
+        Relative error in imag component = 0.000005
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 6.3808e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.09871e-05
+FAILED: Validation; test failed at 1indicies out of 2048
+Timing Summary For Round:
+-------------------------
+Data Size           =   2048
+Total CPU Time      =   0.003774
+Total FPGA Time     =   0.000107
 ->Input Load Time   =   0.000004
 ->Excution Time     =   0.000097
 ->Output Load Time  =   0.000004
-***********************************************************************
-
+INFO:  STATING ROUND : 6
+INFO:  Start Validation
+Error:  Results Mismatch:
+        Index i = 1179; CPU Results (-11555.636719, 0.898438); Device Result (-11555.658203, 0.881256)
+        Relative error in real component = 0.000002
+        Relative error in imag component = 0.019124
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.26771e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.16527e-05
+FAILED: Validation; test failed at 1indicies out of 2048
+Timing Summary For Round:
+-------------------------
+Data Size           =   2048
+Total CPU Time      =   0.003811
+Total FPGA Time     =   0.000106
+->Input Load Time   =   0.000005
+->Excution Time     =   0.000095
+->Output Load Time  =   0.000004
+INFO:  STATING ROUND : 7
+INFO:  Start Validation
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.05286e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 1.02741e-05
+PASSED:    Validation; data at all indicies match
+Timing Summary For Round:
+-------------------------
+Data Size           =   2048
+Total CPU Time      =   0.003778
+Total FPGA Time     =   0.000105
+->Input Load Time   =   0.000004
+->Excution Time     =   0.000095
+->Output Load Time  =   0.000004
+INFO:  STATING ROUND : 8
+INFO:  Start Validation
+Error:  Results Mismatch:
+        Index i = 1300; CPU Results (584.479736, 1.115234); Device Result (584.484924, 1.100220)
+        Relative error in real component = 0.000009
+        Relative error in imag component = 0.013463
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.18674e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 3.12242e-05
+FAILED: Validation; test failed at 1indicies out of 2048
+Timing Summary For Round:
+-------------------------
+Data Size           =   2048
+Total CPU Time      =   0.003780
+Total FPGA Time     =   0.000105
+->Input Load Time   =   0.000004
+->Excution Time     =   0.000095
+->Output Load Time  =   0.000004
+INFO:  STATING ROUND : 9
+INFO:  Start Validation
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 1.48203e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.19583e-05
+PASSED:    Validation; data at all indicies match
+Timing Summary For Round:
+-------------------------
+Data Size           =   2048
+Total CPU Time      =   0.003782
+Total FPGA Time     =   0.000105
+->Input Load Time   =   0.000004
+->Excution Time     =   0.000095
+->Output Load Time  =   0.000004
+************************  Timing Summary   ***************************
 PASSED:    RUN KERNEL NUMBER OF TIMES =  10
-
-
-****************   Timing Summary **************************
-************************************************************
-RESULTS: FPGA Time average  = 0.000107018
-RESULTS: CPU  Time average  = 0.00378236
-************************************************************
-************************************************************
+RESULTS: FPGA Time average  = 9.5637e-05
+RESULTS: CPU  Time average  = 0.00378267
+**********************************************************************
 
 ```
