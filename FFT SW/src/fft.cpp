@@ -346,7 +346,8 @@ void fft_random_data_generator(cmpx_data_t *input_data, cmpx_data_t *output_data
         throw runtime_error("n must be a power of 2");
     }
 
-    mt19937 gen(1703);
+    std::random_device rd;
+    mt19937 gen(rd());
     uniform_real_distribution<> dis(100.0, 1000.0);
 
     // crease random testing data
@@ -380,7 +381,8 @@ void fft2d_random_data_generator_vector(vector<vector<cmpx_data_t>> &input_data,
         throw runtime_error("Data vector length must be a power of 2");
     }
 
-    mt19937 gen(1703);
+    std::random_device rd;
+    mt19937 gen(rd());
     uniform_real_distribution<> dis(0.0, 10.0);
 
     for (int i = 0; i < m; ++i) {
@@ -410,7 +412,8 @@ void fft2d_random_data_generator(cmpx_data_t *input_data, cmpx_data_t *output_da
         throw runtime_error("m must be a power of 2");
     }
 
-    mt19937 gen(1703);
+    std::random_device rd;
+    mt19937 gen(rd());
     uniform_real_distribution<> dis(100.0, 1000.0);
 
     // crease random testing data

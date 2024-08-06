@@ -928,5 +928,3 @@ int main(){
     fft2d_test_generator(n,m, tolerance, scale);
 
 }
-
-
