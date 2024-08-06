@@ -95,15 +95,13 @@ typedef std::complex<in_data_t> cmpx_input_data_t;
 
 
 
-
 /**
  * Takes an array of data and retruns a DFFT 
  * @param direction   1 indicates FFT and 0 indicated InverseFFT
  * @param in          input data array
  * @param out_s       output data array
- * @param ovflo       If any overflow occurred during the FFT
 */
-extern "C" void fft_top(const bool direction, const cmpx_input_data_t *in, cmpx_output_data_t *out, bool ovflo);
+extern "C" void fft_top(const bool direction, const cmpx_input_data_t *in, cmpx_output_data_t *out);
 
 
 

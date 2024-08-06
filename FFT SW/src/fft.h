@@ -138,7 +138,7 @@ void fft_data_generator(cmpx_data_t *input_data, cmpx_data_t *output_data, int f
  * Produces random 1D FFT Testing Data ~ Unif(100, 1000) and expected output. Array Interface.
  * @param input_data  input 1d array.
  * @param output_data ouput 1d array.
- * @param m num of data samples, must be a power of 2.
+ * @param n num of data samples, must be a power of 2.
  * @param invert 1 if inverse fft.
  * @param scale whether to scale results by nm if inverse fft.
  */

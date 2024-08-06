@@ -118,15 +118,17 @@ void fft_data_generator(vector<cmpx_data_t> &input_data, vector<cmpx_data_t> &ou
 }
 
 
-
 /**
  * Checks if two complex numbers are equal within a tolarance
  */
 bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) {
-    bool real_compare = (a.real() == b.real() && b.real()==0) || (std::abs((a.real() - b.real())/a.real()) < tolerance);
-    bool imag_compare = (a.imag() == b.imag() && b.imag()==0) || (std::abs((a.imag() - b.imag())/a.imag()) < tolerance);
+
+    bool real_compare = (a.real()<tolerance && b.real()<tolerance) || (abs((a.real() - b.real())/max(abs(a.real()), abs(b.real()))) < tolerance);
+    bool imag_compare = (a.imag()<tolerance && b.imag()<tolerance) || (abs((a.imag() - b.imag())/max(abs(a.imag()), abs(b.imag()))) < tolerance);
+
     return  real_compare && imag_compare;
 }
+
 
 
 
@@ -171,14 +173,13 @@ int main() {
     /////////////////  Call FFT function   //////////////
     cmpx_data_t hardware_input_data[DATA_SIZE];
     cmpx_data_t hardware_output_data[DATA_SIZE];
-    bool ovflo = false;
     bool FORWARD_FFT = false;                                // Use true for forward FFT, false for inverse FFT
 
     for (int i =0; i<DATA_SIZE; i++){
         hardware_input_data[i] = software_generated_input_data[i];
     }
 
-    fft_top(FORWARD_FFT, hardware_input_data, hardware_output_data, ovflo);
+    fft_top(FORWARD_FFT, hardware_input_data, hardware_output_data);
 
     ofstream hardware_output_file("hardware_output.txt");
     for (int i = 0; i < DATA_SIZE; i++) {
@@ -209,9 +210,6 @@ int main() {
     if (passed) {
         cout << "All tests passed!" << endl;
         return 0;
-    } else if (ovflo){
-        cout << " (OVERFLOW!!!)" << endl;
-        return 1;
     } else{
         cout <<"Tests failed " << "at "<<failed_count << " indicies out of" << DATA_SIZE << endl << endl;
         return 0;

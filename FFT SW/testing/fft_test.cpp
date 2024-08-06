@@ -1,7 +1,7 @@
 
 #include <iostream>
 #include <fstream>
-#include "fft.h"
+#include "../src/fft.h"
 
 
 
