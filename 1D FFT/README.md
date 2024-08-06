@@ -29,6 +29,12 @@ For more notes on the general static parameters, go to the readme file in the [*
 The data in the test bench was saved to files to be plotted using the [python script](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/1D%20FFT/hls/plot_sim_results.py).
 ![Screenshot 2024-07-29 at 2 58 48 PM](https://github.com/user-attachments/assets/157e88f5-b701-4e17-94e5-edf9dc1ebf04)
 
+## Timing VS FFT Size
+Testing data is generated randomly ~Unif(100, 1000)
+![Timing FFT](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/1D%20FFT/timing/fft_timing_plot.png)
+
+
+
 ## Hardware Deployment Results
 ```sh
 zynqmp-common-20232:~$ ./fft_host binary_container_1.xclbin 
