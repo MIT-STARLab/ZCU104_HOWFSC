@@ -31,7 +31,9 @@ The data in the test bench was saved to files to be plotted using the [python sc
 
 ## Timing VS FFT Size
 Testing data is generated randomly ~Unif(100, 1000)
-![Timing FFT](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/1D%20FFT/timing/fft_timing_plot.png)
+
+![Timing FFT](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/1D%20FFT/timing/fft_timing_plot_fpga.png)
+![Timing FFT](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/1D%20FFT/timing/fft_timing_plot_fpga_mac_cpu.png)
 
 
 
