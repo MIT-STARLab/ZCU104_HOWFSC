@@ -116,8 +116,8 @@ void fft2d_random_data_generator_array(cmpx_data_t *input_data, cmpx_data_t *out
  * Checks if two complex numbers are equal within a tolarance
  */
 bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) {
-    bool real_compare = (a.real() < tolerance && b.real() < tolerance) || (std::abs((a.real() - b.real())/a.real()) < tolerance);
-    bool imag_compare = (a.imag() < tolerance && b.imag() < tolerance) || (std::abs((a.imag() - b.imag())/a.imag()) < tolerance);
+    bool real_compare = (a.real() == b.real() && b.real()==0) || (std::abs((a.real() - b.real())/a.real()) < tolerance);
+    bool imag_compare = (a.imag() == b.imag() && b.imag()==0) || (std::abs((a.imag() - b.imag())/a.imag()) < tolerance);
     return  real_compare && imag_compare;
 }
 
@@ -182,8 +182,9 @@ int main() {
         }
 
         if (software_generated_ouput_data[j].imag() != 0){
-            avg_imag_relative_err +=  (std::abs(( software_generated_ouput_data[j].imag() - hardware_output_data[j].imag())/software_generated_ouput_data[j].imag()) / MAT_SIZE);
+            avg_real_relative_err +=  (std::abs(( software_generated_ouput_data[j].imag() - hardware_output_data[j].imag())/software_generated_ouput_data[j].imag()) / MAT_SIZE);
         }
+
     }
 
 

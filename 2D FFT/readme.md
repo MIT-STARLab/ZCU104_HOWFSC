@@ -1,66 +1,164 @@
 # 2D FFT
 
 ## Block Diagram
+![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/block_diagram_v1.png)
 
-<img width="1131" alt="Screenshot 2024-07-30 at 3 22 46 PM" src="https://github.com/user-attachments/assets/2ec11359-5173-4925-85fe-4c820f033a45">
+## Performance and Resources (Synthesis Report)
+![Timing FFT](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/syn_rpt.png)
+
+
 
 ## Hardware Deployment Results
 
 ```sh
-zynqmp-common-20232:~$
-zynqmp-common-20232:~$ ./fft_2d_host binary_container_1.xclbin
+zynqmp-common-20232:~$ 
+zynqmp-common-20232:~$ ./fft_2d_host binary_container_1.xclbin  
 
-INFO:    Matrix size in words  = 2097152
-INFO:    Matrix size in bytes  = 8388608
-INFO:    Generating Testing Data...
-PASSED:  Testing Data Generated Successfully
-PASSED:  auto my_device = xrt::device(0)
-PASSED:  auto xclbin_uuid = my_device.load_xclbin(binary_container_1.xclbin)
-PASSED:  auto krnl = xrt::kernel(my_device, xclbin_uuid, "fft_2d:{fft_2d_1}")
-INFO:    Allocate Buffers in Global Memory
-PASSED:  auto bo_input  = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(1)) (=4))
-PASSED:  auto bo_temp   = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(2)) (=4))
-PASSED:  auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(3)) (=4))
-PASSED:  auto bo_input_map  = bo_input.map<cmpx_data_t*>()
-PASSED:  auto bo_output_map = bo_output.map<cmpx_data_t*>()
-INFO:    Filling Buffers with input data
-INFO:    synchronize input buffer data to device global memory
-PASSED:  bo_input.sync(XCL_BO_SYNC_BO_TO_DEVICE)
-INFO:    Execution of the kernel
+PASSED:    auto my_device = xrt::device(0)
+PASSED:    auto xclbin_uuid = my_device.load_xclbin(binary_container_1.xclbin)
+PASSED:    auto krnl = xrt::kernel(my_device, xclbin_uuid, "fft_2d:{fft_2d_1}")
+INFO:  Allocate Buffers in Global Memory
+INFO:  Matrix size in words  = 2097152
+INFO:  Matrix size in bytes  = 8388608
+PASSED:    auto bo_input  = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(1)) (=4))
+PASSED:    auto bo_temp   = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(2)) (=4))
+PASSED:    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(3)) (=4))
+PASSED:    auto bo_input_map  = bo_input.map<cmpx_data_t*>()
+PASSED:    auto bo_output_map = bo_output.map<cmpx_data_t*>()
+INFO:  Generating Testing Data...
+PASSED:    Testing Data Generated
+INFO:  Filling Argument Buffers with input data
+Filling Buffers with input data
+INFO:  Running on CPU First
+PASSED:    CPU Done
+INFO:  synchronize input buffer data to device global memory
+PASSED:    bo_input.sync(XCL_BO_SYNC_BO_TO_DEVICE)
+INFO:  Execution of the kernel
 
-INFO:    Waiting for kernels to end...
+INFO:  Waiting for kernels to end...
 
-PASSED:  run.wait()
-PASSED:  bo_output.sync(XCL_BO_SYNC_BO_FROM_DEVICE)
+PASSED:    run.wait()
+PASSED:    bo_output.sync(XCL_BO_SYNC_BO_FROM_DEVICE)
 
-************************ TIMING SUMMARY ************************
-Timing 2D FFT Kernel with input matrix with size (1024, 1024)
-Time Total = 0.038932
-Load Input Time  = 2.548e-05
-Excution Time = 0.0388528
-Load Output Time = 4.62e-06
-****************************************************************
+INFO:  Start Validation
 
-INFO:   Validating Output results
-Error at index 2175: Expected (-64.7979, 68219.4), Actual (-65.52, 68219.4)
-relative real error is 0.0111449
-relative imag error is 3.43561e-07
-Error at index 6056: Expected (296957, -41.4688), Actual (296957, -42.0093)
-relative real error is 1.26281e-06
-relative imag error is 0.0130346
-    .
-    .
-    .
-Error at index 1047021: Expected (-91.1016, 173071), Actual (-89.2002, 173071)
-relative real error is 0.0208709
-relative imag error is 3.70152e-06
-Error at index 1048484: Expected (-116533, 149.719), Actual (-116533, 147.833)
-relative real error is 4.35767e-06
-relative imag error is 0.0125952
+Error:  Results Mismatch:
+        Index i = 14925; CPU Results (-340990.093750, 19.281250); Device Result (-340990.343750, 19.581055)
+        Relative error in real component = 0.000001
+        Relative error in imag component = 0.015549
+...
+Error:  Results Mismatch:
+        Index i = 1047184; CPU Results (6.187500, 13021.396484); Device Result (4.573242, 13022.248047)
+        Relative error in real component = 0.260890
+        Relative error in imag component = 0.000065
 
-INFO:   Tests failed at 356 entries out of 1048576
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 2.70611e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.98263e-05
+FAILED: Validation; test failed at 213 indicies out of 1048576
+2D FFT Run Time:
+-------------------------
+Matrix Dimension Size =   (1024, 1024)
+Total CPU Time        =   5.193193
+Total FPGA Time       =   0.015350
+->Input Load Time     =   0.000033
+->Excution Time       =   0.015262
+->Output Load Time    =   0.000005
 
-INFO:   Average Relative Error in the Real Componenet Across All entries = 4.84353e-05
-INFO:   Average Relative Error in the Imaginary Componenet Across All entries = 0
+
+
+*********************************************
+INFO:  RUN KERNEL NUMBER OF TIMES =  10
+*********************************************
+
+INFO:  STATING ROUND : 0
+INFO:  Start Validation
+Error:  Results Mismatch:
+        Index i = 291; CPU Results (2.328125, 394607.500000); Device Result (1.496582, 394607.781250)
+        Relative error in real component = 0.357173
+        Relative error in imag component = 0.000001
+.
+.
+.
+Error:  Results Mismatch:
+        Index i = 1047584; CPU Results (169052.171875, 27.906250); Device Result (169050.265625, 27.387207)
+        Relative error in real component = 0.000011
+        Relative error in imag component = 0.018600
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 3.2744e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.66638e-05
+FAILED: Validation; test failed at 164 indicies out of 1048576
+2D FFT Run Time:
+-------------------------
+Matrix Dimension Size =   (1024, 1024)
+Total CPU Time        =   5.192590
+Total FPGA Time       =   0.015082
+->Input Load Time     =   0.000019
+->Excution Time       =   0.015056
+->Output Load Time    =   0.000005
+
+INFO:  STATING ROUND : 1
+INFO:  Start Validation
+Error:  Results Mismatch:
+        Index i = 3412; CPU Results (14.884766, 138721.921875); Device Result (15.179688, 138722.171875)
+        Relative error in real component = 0.019814
+        Relative error in imag component = 0.000002
+.
+.
+.
+Error:  Results Mismatch:
+        Index i = 1046236; CPU Results (59.882812, -4783.828125); Device Result (57.494141, -4785.624023)
+        Relative error in real component = 0.039889
+        Relative error in imag component = 0.000375
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 5.85683e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 3.34888e-05
+FAILED: Validation; test failed at 178indicies out of 1048576
+2D FFT Run Time:
+-------------------------
+Matrix Dimension Size =   (1024, 1024)
+Total CPU Time        =   5.192721
+Total FPGA Time       =   0.015084
+->Input Load Time     =   0.000019
+->Excution Time       =   0.015057
+->Output Load Time    =   0.000005
+.
+.
+.
+.
+.
+.
+
+INFO:  STATING ROUND : 9
+INFO:  Start Validation
+Error:  Results Mismatch:
+        Index i = 9394; CPU Results (7.539062, 158312.906250); Device Result (7.638184, 158312.593750)
+        Relative error in real component = 0.013148
+        Relative error in imag component = 0.000002
+...
+Error:  Results Mismatch:
+        Index i = 1028304; CPU Results (-173891.093750, 32.265625); Device Result (-173889.843750, 34.137207)
+        Relative error in real component = 0.000007
+        Relative error in imag component = 0.058005
+RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 2.10183e-05
+RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.47206e-05
+FAILED: Validation; test failed at 165indicies out of 1048576
+2D FFT Run Time:
+-------------------------
+Matrix Dimension Size =   (1024, 1024)
+Total CPU Time        =   5.207527
+Total FPGA Time       =   0.015087
+->Input Load Time     =   0.000019
+->Excution Time       =   0.015060
+->Output Load Time    =   0.000005
+
+
+
+
+**************************      Timing Summary   ****************************
+Kernel name                        = 2D FFT
+Input Data Size                    = (1024, 1024)
+Number of Run Rounds               = 10
+FPGA Average Run Time (With Sync)  = 0.015082
+FPGA Average Run Time (No   Sync)  = 0.015056
+CPU  Average Run Time              = 5.200041
+*****************************************************************************
 
 ```
