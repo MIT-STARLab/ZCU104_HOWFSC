@@ -14,23 +14,24 @@ The following table provides a detailed summary of the timing results for the 2D
 The measurements are taken for different input data sizes, and both with and without synchronization for FPGA.
 Testing data is generated randomly ~Unif(100, 1000)
 
-| FFT Size | Latency (seconds)           | FPGA Average Run Time (With Sync) | FPGA Average Run Time (No Sync) | CPU Average Run Time |
+| FFT Size | Latency (cycles)            | FPGA Average Run Time (With Sync) | FPGA Average Run Time (No Sync) | CPU Average Run Time |
 |----------|-----------------------------|-----------------------------------|---------------------------------|-----------------------|
-| 128      | 31,119    * (10 ns/cycle)* (10^-9 ns/s)  | 0.000311 seconds     | 0.000301 seconds                | 0.041216 seconds      |
-| 256      | 112,079   * (10 ns/cycle)* (10^-9 ns/s)  | 0.001005 seconds     | 0.186729 seconds                | 0.186729 seconds      |
-| 512      | 423,503   * (10 ns/cycle)* (10^-9 ns/s)  | 0.003727 seconds     | 1.144043 seconds                | 1.144043 seconds      |
-| 1024     | 1,636,431 * (10 ns/cycle)* (10^-9 ns/s)  | 0.015062 seconds     | 5.142044 seconds                | 5.142044 seconds      |
-| 2048     | 6,429,775 * (10 ns/cycle)* (10^-9 ns/s)  | 0.065410 seconds     | 23.538236 seconds               | 23.538236 seconds     |
+| 128      | 31,119                      | 0.000311 seconds     | 0.000301 seconds                | 0.041216 seconds      |
+| 256      | 112,079                     | 0.001005 seconds     | 0.186729 seconds                | 0.186729 seconds      |
+| 512      | 423,503                     | 0.003727 seconds     | 1.144043 seconds                | 1.144043 seconds      |
+| 1024     | 1,636,431                   | 0.015062 seconds     | 5.142044 seconds                | 5.142044 seconds      |
+| 2048     | 6,429,775                   | 0.065410 seconds     | 23.538236 seconds               | 23.538236 seconds     |
+
+
+![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/timing/fft2d_timing_plot_fpga_mac_cpu.png)
+
 
 **Notes:**
-- **Latency** is provided in seconds and is calculated from Vitis synthesis report.
+- **Latency** is provided in cycles and is calculated from Vitis synthesis report. Convert using * (10 ns/cycle) * (10^-9 ns/s).
 - **FPGA Average Run Time (With Sync)** includes synchronization overhead.
 - **FPGA Average Run Time (No Sync)** excludes synchronization overhead.
 - **CPU Average Run Time** is the run time on the ZCU 104 CPU for the same FFT size.
-
-This data shows the performance comparison between FPGA and CPU implementations of the 2D FFT algorithm.
-
-![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/timing/fft2d_timing_plot_fpga_mac_cpu.png)
+- **Mac Timing Data** are in the [FFT SW](https://github.com/MIT-STARLab/ZCU104_HOWFSC/tree/main/FFT%20SW)/timing Folder
 
 
 
