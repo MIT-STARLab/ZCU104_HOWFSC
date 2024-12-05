@@ -134,7 +134,6 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
 }
 
 
-
 void propagate_wave(
     double scale,
     double distance,
@@ -154,7 +153,8 @@ void propagate_wave(
                 double kxy_j = kxy[col_tile + i + HALF_MAT_COLS];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                coeff_vec[i] = (cmpx_data_t) (scale * __complex_exp(complex<double>(0, kz * distance)));
+                complex<double> e_kzd(1, hls::sin(kz * distance));
+                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -168,7 +168,8 @@ void propagate_wave(
                 double kxy_j = kxy[col_tile + i + HALF_MAT_COLS];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                coeff_vec[i] = (cmpx_data_t) (scale * __complex_exp(complex<double>(0, kz * distance)));
+                complex<double> e_kzd(1, hls::sin(kz * distance));
+                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -185,10 +186,12 @@ void propagate_wave(
                 double kxy_j = kxy[col_tile + i];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                coeff_vec[i] = (cmpx_data_t) (scale * __complex_exp(complex<double>(0, kz * distance)));
+                complex<double> e_kzd(1, hls::sin(kz * distance));
+                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
+
 
         // this is a quad4 indices that is supposed to be filled with quad1 content
         for (int row=HALF_MAT_ROWS; row < MAT_ROWS; row++){
@@ -199,7 +202,8 @@ void propagate_wave(
                 double kxy_j = kxy[col_tile + i];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                coeff_vec[i] = (cmpx_data_t) (scale * __complex_exp(complex<double>(0, kz * distance)));
+                complex<double> e_kzd(1, hls::sin(kz * distance));
+                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
 
@@ -225,7 +229,7 @@ void angular_spectrum(
     #pragma HLS INTERFACE s_axilite     port=distance
     #pragma HLS INTERFACE s_axilite     port=k_2
 
-    #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem3  depth = MAT_ROWS        //TODO: cache
+    #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem3  depth = MAT_ROWS        //TODO: cache/BRAM
     #pragma HLS INTERFACE m_axi         port=input_mat        bundle=gmem0  depth = MAT_SIZE
     #pragma HLS INTERFACE m_axi         port=output_mat       bundle=gmem0  depth = MAT_SIZE
     #pragma HLS INTERFACE m_axi         port=temp_mat_1       bundle=gmem1  depth = MAT_SIZE
@@ -254,7 +258,7 @@ void angular_spectrum(
 
     propagate_wave(scale, distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
 
-    stream_from_fft_col_to_fft_row(temp_mat_2, second_input_matrix_col_major_strm, second_output_matrix_row_major_strm);
+    stream_from_fft_col_to_fft_row(temp_mat_2, second_output_matrix_col_major_strm, second_input_matrix_row_major_strm);
     fft_2d(!direction, //second fft is inverse
            second_input_matrix_row_major_strm,
            second_output_matrix_row_major_strm,
