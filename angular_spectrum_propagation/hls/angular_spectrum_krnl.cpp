@@ -1,6 +1,7 @@
 /*
  * MIT STAR Lab
- * Modified by Subhi in Nov 26, 2024
+ * M.Subhi Abo Rdan (msubhi_a@mit.edu)
+ * Last modified in Dec 29, 2024
  */
 
 #include "angular_spectrum_include.h"
@@ -11,38 +12,36 @@ void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_
     vector_row_data_t* input_mat_vec = (vector_row_data_t*) input_mat;
 
     SHIFTED_STREAM_TO_FIRST_FFT_UPPER_HALF:
-        for (int i= HALF_MAT_SIZE/VECTOR_SIZE_ROW; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){
-
+        for (int i= ((MAT_SIZE/2)/VECTOR_SIZE_ROW); i<(MAT_SIZE/VECTOR_SIZE_ROW); i+= (MAT_ROWS/VECTOR_SIZE_ROW)){
 
             // half a row from quad 4
             SHIFTED_STREAM_TO_FIRST_FFT_QUAD4:
-            for (int j=HALF_MAT_ROWS/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
+            for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
                 #pragma HLS PIPELINE II=1
                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
             }
 
             SHIFTED_STREAM_TO_FIRST_FFT_QUAD3:
             // then, half a row from quad 3
-            for (int j=0; j<HALF_MAT_ROWS/VECTOR_SIZE_ROW; j++){
+            for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
                 #pragma HLS PIPELINE II=1
                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
             }
         }
 
     SHIFTED_STREAM_TO_FIRST_FFT_LOWER_HALF:
-        for (int i= 0; i<HALF_MAT_SIZE/VECTOR_SIZE_ROW; i++){
-
+        for (int i= 0; i<(MAT_SIZE/2)/VECTOR_SIZE_ROW; i+= MAT_ROWS/VECTOR_SIZE_ROW){
 
             // half a row from quad 2
             SHIFTED_STREAM_TO_FIRST_FFT_QUAD2:
-            for (int j=HALF_MAT_ROWS/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
+            for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
                 #pragma HLS PIPELINE II=1
                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
             }
 
             SHIFTED_STREAM_TO_FIRST_FFT_QUAD1:
             // then, half a row from quad 1
-            for (int j=0; j<HALF_MAT_ROWS/VECTOR_SIZE_ROW; j++){
+            for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
                 #pragma HLS PIPELINE II=1
                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
             }
@@ -53,14 +52,11 @@ void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_
 void stream_from_fft_row_to_fft_col(cmpx_data_t *temp_mat,  hls::stream<vector_row_data_t> &matrix_from_row_strm,  hls::stream<vector_col_data_t> &matrix_to_col_strm)
 {
     vector_row_data_t* temp_mat_vec_row = (vector_row_data_t*) temp_mat;
-
     STRAM_FROM_FFT_ROW:
     for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){
-
         #pragma HLS PIPELINE II=1
         temp_mat_vec_row[i] = matrix_from_row_strm.read();
     }
-
     vector_col_data_t* temp_mat_vec_col = (vector_col_data_t*) temp_mat;
 
     STRAM_TO_FFT_COL:
@@ -101,32 +97,32 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
     vector_row_data_t* output_mat_vec = (vector_row_data_t*) output_mat;
 
     SHIFTED_STREAM_BACK_FROM_SECOND_FFT_LOWER_HALF:
-    for (int i= HALF_MAT_SIZE/VECTOR_SIZE_ROW; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){
+    for (int i= (MAT_SIZE/2)/VECTOR_SIZE_ROW; i<MAT_SIZE/VECTOR_SIZE_ROW; i+= MAT_ROWS/VECTOR_SIZE_ROW){
 
         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD4:
-        for (int j=HALF_MAT_ROWS/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
+        for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
             #pragma HLS PIPELINE II=1
             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
         }
 
         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD3:
-        for (int j=0; j<HALF_MAT_ROWS/VECTOR_SIZE_ROW; j++){
+        for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
             #pragma HLS PIPELINE II=1
             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
         }
     }
 
     SHIFTED_STREAM_BACK_FROM_SECOND_FFT_UPPER_HALF:
-    for (int i= 0; i<HALF_MAT_SIZE/VECTOR_SIZE_ROW; i++){
+    for (int i= 0; i<(MAT_SIZE/2)/VECTOR_SIZE_ROW; i+= MAT_ROWS/VECTOR_SIZE_ROW){
 
         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD2:
-        for (int j=HALF_MAT_ROWS/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
+        for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
             #pragma HLS PIPELINE II=1
             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
         }
 
         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD1:
-        for (int j=0; j<HALF_MAT_ROWS/VECTOR_SIZE_ROW; j++){
+        for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
             #pragma HLS PIPELINE II=1
             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
         }
@@ -142,33 +138,34 @@ void propagate_wave(
     hls::stream<vector_col_data_t> &first_output_matrix_col_major_strm,
     hls::stream<vector_col_data_t> &second_input_matrix_col_major_strm)
 {
-    // TODO: LITTLE'S LAW
-    for (int col_tile=0; col_tile < HALF_MAT_COLS/VECTOR_SIZE_ROW; col_tile++){
+    // TODO: LITTLE'S LAW; PIPLINING?
+
+    for (int col_tile=MAT_COLS/2; col_tile < MAT_COLS; col_tile+=VECTOR_SIZE_COL){
         // this is a quad1 indices that is supposed to be filled with quad4 content
-        for (int row=0; row < HALF_MAT_ROWS; row++){
+        for (int row=MAT_ROWS/2; row < MAT_ROWS; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
                 #pragma HLS UNROLL
-                double kxy_i = kxy[row + HALF_MAT_ROWS];
-                double kxy_j = kxy[col_tile + i + HALF_MAT_COLS];
+                double kxy_i = kxy[row];
+                double kxy_j = kxy[col_tile + i];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(1, hls::sin(kz * distance));
+                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
 
         // this is a quad3 indices that is supposed to be filled with quad2 content
-        for (int row=HALF_MAT_ROWS; row < MAT_ROWS; row++){
+        for (int row=0; row < MAT_ROWS/2; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
                 #pragma HLS UNROLL
                 double kxy_i = kxy[row];
-                double kxy_j = kxy[col_tile + i + HALF_MAT_COLS];
+                double kxy_j = kxy[col_tile + i];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(1, hls::sin(kz * distance));
+                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
@@ -176,25 +173,9 @@ void propagate_wave(
     }
 
 
-    for (int col_tile=HALF_MAT_COLS/VECTOR_SIZE_ROW; col_tile <MAT_COLS/VECTOR_SIZE_ROW; col_tile++){
+    for (int col_tile=0; col_tile <MAT_COLS/2; col_tile+=VECTOR_SIZE_COL){
         // this is a quad2 indices that is supposed to be filled with quad3 content
-        for (int row=0; row < HALF_MAT_ROWS; row++){
-            vector_col_data_t coeff_vec;
-            for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS UNROLL
-                double kxy_i = kxy[row + HALF_MAT_ROWS];
-                double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
-                double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(1, hls::sin(kz * distance));
-                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
-            }
-            second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
-        }
-
-
-        // this is a quad4 indices that is supposed to be filled with quad1 content
-        for (int row=HALF_MAT_ROWS; row < MAT_ROWS; row++){
+        for (int row=MAT_ROWS/2; row < MAT_ROWS; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
                 #pragma HLS UNROLL
@@ -202,7 +183,22 @@ void propagate_wave(
                 double kxy_j = kxy[col_tile + i];
                 double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(1, hls::sin(kz * distance));
+                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
+                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
+            }
+            second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
+        }
+
+        // this is a quad4 indices that is supposed to be filled with quad1 content
+        for (int row=0; row < MAT_ROWS/2; row++){
+            vector_col_data_t coeff_vec;
+            for (int i=0; i<VECTOR_SIZE_COL; i++){
+                #pragma HLS UNROLL
+                double kxy_i = kxy[row];
+                double kxy_j = kxy[col_tile + i];
+                double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
+                double kz = hls::sqrt(k_2 - kxy_sum);
+                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
@@ -210,6 +206,7 @@ void propagate_wave(
         }
     }
 }
+
 
 
 void angular_spectrum(
@@ -245,25 +242,18 @@ void angular_spectrum(
     hls::stream<vector_row_data_t> second_input_matrix_row_major_strm;
     hls::stream<vector_row_data_t> second_output_matrix_row_major_strm;
 
-
     #pragma HLS DATAFLOW
-    shifted_stream_to_first_fft(input_mat, first_input_matrix_row_major_strm);
 
+    shifted_stream_to_first_fft(input_mat, first_input_matrix_row_major_strm);
+    fft_row_top(direction, first_input_matrix_row_major_strm, first_output_matrix_row_major_strm);
     stream_from_fft_row_to_fft_col(temp_mat_1, first_output_matrix_row_major_strm, first_input_matrix_col_major_strm);
-    fft_2d(direction, 
-           first_input_matrix_row_major_strm,
-           first_output_matrix_row_major_strm,
-           first_input_matrix_col_major_strm,
-           first_output_matrix_col_major_strm);
+    fft_col_top(direction, first_input_matrix_col_major_strm, first_output_matrix_col_major_strm);
 
     propagate_wave(scale, distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
 
+    fft_col_top(!direction, second_input_matrix_col_major_strm, second_output_matrix_col_major_strm);
     stream_from_fft_col_to_fft_row(temp_mat_2, second_output_matrix_col_major_strm, second_input_matrix_row_major_strm);
-    fft_2d(!direction, //second fft is inverse
-           second_input_matrix_row_major_strm,
-           second_output_matrix_row_major_strm,
-           second_input_matrix_col_major_strm,
-           second_output_matrix_col_major_strm);
+    fft_row_top(!direction, second_input_matrix_row_major_strm, second_output_matrix_row_major_strm);
 
     shifted_resolve_stream_from_second_fft(output_mat, second_output_matrix_row_major_strm);
 }
@@ -272,27 +262,6 @@ void angular_spectrum(
 
 ////////////////////////////////           FFT          /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
-
-void fft_2d(
-    bool direction, 
-    hls::stream<vector_row_data_t> &input_matrix_row_major_strm,
-    hls::stream<vector_row_data_t> &output_matrix_row_major_strm,
-    hls::stream<vector_col_data_t> &input_matrix_col_major_strm,
-    hls::stream<vector_col_data_t> &output_matrix_col_major_strm
-    )
-{
-    #pragma HLS INTERFACE axis port = input_matrix_row_major_strm;
-    #pragma HLS INTERFACE axis port = output_matrix_row_major_strm;
-    #pragma HLS INTERFACE axis port = input_matrix_col_major_strm;
-    #pragma HLS INTERFACE axis port = output_matrix_col_major_strm;
-
-    #pragma HLS DATAFLOW
-    fft_row_top(direction, input_matrix_row_major_strm, output_matrix_row_major_strm);
-    fft_col_top(direction, input_matrix_col_major_strm, output_matrix_col_major_strm);
-}
-
-
-
 
 void fft_row_top(bool direction, hls::stream<vector_row_data_t> &matrix_to_row_strm, hls::stream<vector_row_data_t> &matrix_from_row_strm)
 {

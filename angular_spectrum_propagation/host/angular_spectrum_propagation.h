@@ -1,6 +1,7 @@
 /*
  * MIT STAR Lab
- * Modified by Subhi in Nov 20, 2024
+ * M.Subhi Abo Rdan (msubhi_a@mit.edu)
+ * Last modified in Dec 29, 2024
  */
 
 #ifndef ANG_SPEC_PROP_H
@@ -40,6 +41,6 @@ extern "C" void elementwise_cmpx_mul(cmpx_data_t* arr1, cmpx_data_t* arr2, int m
 
 
 // Testing Data Helper
-extern "C" void generate_star_gaussian(cmpx_data_t* arr, int size, double sigma, double intensity, double noise_stddev);
+extern "C" void generate_star_gaussian(cmpx_data_t* arr, int size, double sigma, double intensity, double noise_stddev, bool noise = true);
 
 #endif

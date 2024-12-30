@@ -219,7 +219,7 @@ def test_construct_transform_function():
     plt.show()
     
 
-def generate_star_gaussian(size, sigma, intensity, noise_stddev=0.1):
+def generate_star_gaussian(size, sigma, intensity, noise_stddev=0.1, noise = True):
     # Create an empty image
     image = np.zeros((size, size))
     
@@ -238,12 +238,10 @@ def generate_star_gaussian(size, sigma, intensity, noise_stddev=0.1):
     gaussian = (intensity / 8) * np.exp(-distance**2 / (2 * (sigma/2)**2))
     image += gaussian
 
-    # Add random noise (Gaussian noise)
-    noise = np.random.normal(0, noise_stddev, size=(size, size))
-    image += noise
-
-    # Clip the image to be in the valid range [0, 1]
-    image = np.clip(image, 0, 1)
+    if noise:
+        # Add random noise (Gaussian noise)
+        noise_data = np.random.normal(0, noise_stddev, size=(size, size))
+        image += noise_data
 
     return image
 
@@ -260,14 +258,14 @@ def test_angular_spectrum_propagation():
     ]
 
     # Define parameters (typical for a space telescope simulation)
-    n = 1024
+    n = 64
     wavelength = 500e-9
     distance = 1000e-3
     pixel_scale = 10e-3 / (n / 2)
 
     # Generate Gaussian wavefront
     wavefront_c = (CmpxData * (n * n))()
-    wavefront = generate_star_gaussian(n, 1, 1e5, 0.01) # generate_random_wavefront(n)
+    wavefront = generate_star_gaussian(n, 10, 1e5, 0.01, False) # generate_random_wavefront(n)
     for i in range(n * n):
         wavefront_c[i].real = wavefront.flat[i].real
         wavefront_c[i].imag = wavefront.flat[i].imag
@@ -341,6 +339,66 @@ def test_angular_spectrum_propagation():
 
 
 
+def test_generate_star_gaussian():
+
+    transform_lib.generate_star_gaussian.argtypes = [
+        ctypes.POINTER(CmpxData),   # wavefront
+        ctypes.c_int,               # size
+        ctypes.c_double,            # sigma
+        ctypes.c_double,            # intensity
+        ctypes.c_double,            # noise_stddev
+        ctypes.c_bool,              # noise
+    ]
+
+    # Define parameters (typical for a space telescope simulation)
+    n = 1024
+    sigma = 10
+    intensity = 1e5
+    noise_stddev = 0.01
+    noise = False
+
+    wavefront_c = (CmpxData * (n * n))()
+    transform_lib.generate_star_gaussian(
+        wavefront_c,
+        n,
+        ctypes.c_double(sigma),
+        ctypes.c_double(intensity),
+        ctypes.c_double(noise_stddev),
+        ctypes.c_bool(noise)
+    )
+    wavefront_c_real = np.array([wavefront_c[i].real for i in range(n * n)]).reshape(n, n)
+    wavefront_python = generate_star_gaussian(n, sigma, intensity, noise_stddev, noise)
+
+
+
+    # Compute the difference
+    wavefront_diff = wavefront_c_real - wavefront_python
+
+    # Plot the results
+    plt.figure(figsize=(15, 5))
+
+    plt.subplot(1, 3, 1)
+    plt.title("C Function Output (Real)")
+    plt.imshow(wavefront_c_real, cmap="gray")
+    plt.colorbar()
+
+    plt.subplot(1, 3, 2)
+    plt.title("Python Function Output")
+    plt.imshow(wavefront_python, cmap="gray")
+    plt.colorbar()
+
+    plt.subplot(1, 3, 3)
+    plt.title("Difference (Real Component)")
+    plt.imshow(wavefront_diff, cmap="gray")
+    plt.colorbar()
+
+    plt.tight_layout()
+    plt.show()
+
+    
+
+
+
 if __name__ == "__main__":
     # Compile the C++ shared library
     cpp_files = "angular_spectrum_propagation.cpp fft.cpp"
@@ -364,4 +422,5 @@ if __name__ == "__main__":
 
     # test_construct_ishifted_transform_function()
     # test_construct_transform_function()
+    # test_generate_star_gaussian()
     test_angular_spectrum_propagation()

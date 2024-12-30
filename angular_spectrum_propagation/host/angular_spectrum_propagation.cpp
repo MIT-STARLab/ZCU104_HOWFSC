@@ -1,6 +1,7 @@
 /*
  * MIT STAR Lab
- * Modified by Subhi in Nov 20, 2024
+ * M.Subhi Abo Rdan (msubhi_a@mit.edu)
+ * Last modified in Dec 29, 2024
  */
 #include "angular_spectrum_propagation.h"
 
@@ -213,7 +214,38 @@ void elementwise_cmpx_mul(cmpx_data_t* arr1, cmpx_data_t* arr2, int m, int n)
 }
 
 
-// TODO: implement
-void generate_star_gaussian(cmpx_data_t* arr, int size, double sigma, double intensity, double noise_stddev)
+void generate_star_gaussian(cmpx_data_t* arr, int size, double sigma, double intensity, double noise_stddev, bool noise)
 {
+    // Define the center of the image
+    int center_x = size / 2;
+    int center_y = size / 2;
+
+    auto add_gaussian = [&](int offset_x, int offset_y, double local_sigma, double local_intensity)
+    {
+        for (int x=0; x<size; x++){
+            for (int y=0; y<size; y++){
+                double distance = std::sqrt(std::pow(x - center_x + offset_x, 2) + std::pow(y - center_y + offset_y, 2));
+                int idx = x * size + y;
+                arr[idx] +=  (cmpx_data_t) (local_intensity * std::exp(-distance * distance / (2 * local_sigma * local_sigma)));
+            }
+        }
+    };
+
+    std::fill(arr, arr + size * size, cmpx_data_t(0.0, 0.0));
+    add_gaussian(0, 0, sigma, intensity);
+    add_gaussian(size / 8, size / 8, sigma / 2, intensity / 8);
+
+
+    if (noise){
+        // Add random Gaussian noise
+        std::random_device rd{};
+        std::mt19937 gen{rd()};
+        std::normal_distribution<double> noise_distribution(0.0, noise_stddev);
+        for (int x = 0; x < size; ++x) {
+            for (int y = 0; y < size; ++y) {
+                int idx = x * size + y;
+                arr[idx] +=  (cmpx_data_t) noise_distribution(gen);
+            }
+        }
+    }
 }

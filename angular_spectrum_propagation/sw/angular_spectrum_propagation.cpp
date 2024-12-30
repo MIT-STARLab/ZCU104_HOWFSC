@@ -63,7 +63,6 @@ void construct_transform_function(cmpx_data_t* tf, int n, float wavelength, floa
     double k = 2.0 * M_PI / wavelength_d;
     double k_2 = k*k;
     double scale = 1/((double)n * (double)n); // 2D FFT normalization
-    int half_n = n/2;
 
     std::vector<double> kxy(n);
     for (int i = 0; i < n; i++)
@@ -212,41 +211,38 @@ void elementwise_cmpx_mul(cmpx_data_t* arr1, cmpx_data_t* arr2, int m, int n)
     }
 }
 
-void generate_star_gaussian(cmpx_data_t* arr, int size, double sigma, double intensity, double noise_stddev)
+void generate_star_gaussian(cmpx_data_t* arr, int size, double sigma, double intensity, double noise_stddev, bool noise)
 {
     // Define the center of the image
     int center_x = size / 2;
     int center_y = size / 2;
 
-    // Lambda function to calculate Gaussian pattern
-    auto add_gaussian = [&](int offset_x, int offset_y, double local_sigma, double local_intensity) {
-        for (int x = 0; x < size; ++x) {
-            for (int y = 0; y < size; ++y) {
+    auto add_gaussian = [&](int offset_x, int offset_y, double local_sigma, double local_intensity)
+    {
+        for (int x=0; x<size; x++){
+            for (int y=0; y<size; y++){
                 double distance = std::sqrt(std::pow(x - center_x + offset_x, 2) + std::pow(y - center_y + offset_y, 2));
                 int idx = x * size + y;
-                arr[idx].real(arr[idx].real() + local_intensity * std::exp(-distance * distance / (2 * local_sigma * local_sigma)));
+                arr[idx] +=  (cmpx_data_t) (local_intensity * std::exp(-distance * distance / (2 * local_sigma * local_sigma)));
             }
         }
     };
 
-    // Clear the output array
-    for (int i = 0; i < size * size; ++i) {
-        arr[i] = cmpx_data_t(0.0f, 0.0f);
-    }
-
-    // Generate Gaussian patterns for the stars
+    std::fill(arr, arr + size * size, cmpx_data_t(0.0, 0.0));
     add_gaussian(0, 0, sigma, intensity);
     add_gaussian(size / 8, size / 8, sigma / 2, intensity / 8);
 
-    // Add random Gaussian noise
-    std::default_random_engine generator;
-    std::normal_distribution<double> noise_distribution(0.0, noise_stddev);
 
-    for (int x = 0; x < size; ++x) {
-        for (int y = 0; y < size; ++y) {
-            int idx = x * size + y;
-            float noise = static_cast<float>(noise_distribution(generator));
-            arr[idx].real(std::clamp(arr[idx].real() + noise, 0.0f, 1.0f));
+    if (noise){
+        // Add random Gaussian noise
+        std::random_device rd{};
+        std::mt19937 gen{rd()};
+        std::normal_distribution<double> noise_distribution(0.0, noise_stddev);
+        for (int x = 0; x < size; ++x) {
+            for (int y = 0; y < size; ++y) {
+                int idx = x * size + y;
+                arr[idx] +=  (cmpx_data_t) noise_distribution(gen);
+            }
         }
     }
 }

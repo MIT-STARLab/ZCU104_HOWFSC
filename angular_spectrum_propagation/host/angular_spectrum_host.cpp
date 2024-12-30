@@ -1,12 +1,15 @@
 /*
  * MIT STAR Lab
- * Last Modified by Subhi in Dec 6, 2024
+ * M.Subhi Abo Rdan (msubhi_a@mit.edu)
+ * Last modified in Dec 29, 2024
  */
 
 #include <sys/syscall.h>
 #include <time.h>
 #include <stdlib.h>
 #include <iostream>
+#include <fstream>
+#include <sstream>
 #include <string>
 #include <complex>
 #include <cmath>
@@ -16,7 +19,7 @@
 #include <xrt/xrt_kernel.h>
 #include <xrt/xrt_bo.h>
 
-// Utils includes
+// My Utils includes
 #include "fft.h"
 #include "angular_spectrum_propagation.h"
 
@@ -70,10 +73,9 @@ static const char* final_results =
 
 
 /**
- * Checks if two complex numbers are equal within a tolarance
+ * @brief Checks if two complex numbers are equal within a relative tolarance
  */
 bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) {
-
     bool real_compare = (a.real()<tolerance && b.real()<tolerance) || (abs((a.real() - b.real())/max(abs(a.real()), abs(b.real()))) < tolerance);
     bool imag_compare = (a.imag()<tolerance && b.imag()<tolerance) || (abs((a.imag() - b.imag())/max(abs(a.imag()), abs(b.imag()))) < tolerance);
 
@@ -83,8 +85,7 @@ bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) 
 /**
  * Validate results
  */
-void validate_results(cmpx_data_t *expected_output, cmpx_data_t *real_output, int data_size, double tolerance){
-
+void validate_results(cmpx_data_t *expected_output, cmpx_data_t *real_output, int data_size, double tolerance, bool save_to_files=false){
     std::cout << STR_INFO << "Start Validation" << std::endl;
 
     bool passed = true;
@@ -118,6 +119,19 @@ void validate_results(cmpx_data_t *expected_output, cmpx_data_t *real_output, in
     if (passed){std::cout << STR_PASSED << "Validation; data at all indicies match";}
     else       {std::cout << STR_FAILED << "Validation; test failed at " << failed_count << "indicies out of " << data_size << std::endl;}
 
+    if (save_to_files){
+        ofstream hardware_output_file("hardware_output.txt");
+        ofstream software_output_file("software_output.txt");
+        hardware_output_file << MAT_ROWS << endl;
+        software_output_file << MAT_ROWS << endl;
+
+        for (int i = 0; i < MAT_SIZE; i++) {
+            hardware_output_file << hardware_output_data[i].real() << " " << hardware_output_data[i].imag() << endl;
+            software_output_file << software_generated_data[i].real() << " " << software_generated_data[i].imag() << endl;
+        }
+        hardware_output_file.close();
+        software_output_file.close();
+    }
 }
 
 
@@ -179,7 +193,7 @@ int main(int argc, char** argv) {
                                                                                                         // kernel argument 3: bool k_2
     auto bo_kxy   = xrt::bo(my_device, MAT_ROWS * sizeof(double), XCL_BO_FLAGS_NONE, krnl.group_id(4)); // kernel argument 4: double *kxy,
     auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5));             // kernel argument 5: input  matrix array
-    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6));             // kernel argument 6: output matrix array
+    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6));            // kernel argument 6: output matrix array
     auto bo_temp1 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(7));             // kernel argument 7: temp_mat_1 array
     auto bo_temp2 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(8));             // kernel argument 8: temp_mat_2 array
 
@@ -206,12 +220,16 @@ int main(int argc, char** argv) {
     std::cout << STR_INFO << "Generating Testing Data..." << std::endl;
 
     bool forward_fft   = 1;
-    double sigma       = 1;
+    // input parameters
+    double sigma       = 0.2 * MAT_ROWS;
     double intensity   = 1e5;
     double noise_stddev= 0.01;
+
+    // telescope parameters
     double wavelength  = 500e-9;
     double pixel_scale = 10e-3 / (MAT_ROWS / 2);
     double distance    = 1000e-3;
+
     double delkx = 2.0 * M_PI / (pixel_scale * MAT_ROWS);
     double k = 2.0 * M_PI / wavelength;
     double k_2 = k*k;
@@ -221,7 +239,7 @@ int main(int argc, char** argv) {
     cmpx_data_t* software_generated_input_data  = new cmpx_data_t[MAT_SIZE];
     cmpx_data_t* software_generated_output_data = new cmpx_data_t[MAT_SIZE];
 
-    generate_star_gaussian(software_generated_input_data, MAT_ROWS, sigma, intensity, noise_stddev);
+    generate_star_gaussian(software_generated_input_data, MAT_ROWS, sigma, intensity, noise_stddev, true);
     for (int i = 0; i < MAT_ROWS; i++){
         kxy[i] = ((-(double)MAT_ROWS / 2.0 + i) + 0.5) * delkx; // Center bins
     }
@@ -292,4 +310,5 @@ int main(int argc, char** argv) {
                            ELAPSED(runTimeEnd, runTime), 
                            ELAPSED(syncOutputEnd, syncOutputTime));
 
+    return 0;
 }
