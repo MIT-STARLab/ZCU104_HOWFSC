@@ -148,7 +148,7 @@ void propagate_wave(
                 #pragma HLS UNROLL
                 double kxy_i = kxy[row];
                 double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
+                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
                 complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
@@ -163,7 +163,7 @@ void propagate_wave(
                 #pragma HLS UNROLL
                 double kxy_i = kxy[row];
                 double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
+                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
                 complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
@@ -181,7 +181,7 @@ void propagate_wave(
                 #pragma HLS UNROLL
                 double kxy_i = kxy[row];
                 double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
+                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
                 complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
@@ -196,7 +196,7 @@ void propagate_wave(
                 #pragma HLS UNROLL
                 double kxy_i = kxy[row];
                 double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j + kxy_j;
+                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
                 double kz = hls::sqrt(k_2 - kxy_sum);
                 complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
                 coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
