@@ -1,7 +1,8 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified in Dec 29, 2024
+ * Last modified on January 16, 2024
+ * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
  */
 
 #ifndef _H_FFT_2D_KRNL_INCLUDE_H_
@@ -15,32 +16,28 @@
 #include <complex>
 
 
-using namespace hls;
-
-
-/********   Matrix Parameters   *********/
-#define MAT_ROWS 64
-#define MAT_COLS 64
+/***** Matrix Parameters *****/
+#define MAT_ROWS 256
+#define MAT_COLS 256
 #define MAT_SIZE (MAT_ROWS * MAT_COLS)
 
 
 
-
 /********   FFT STATIC CONFIGUTATION PARAMETERS   *********/
-const unsigned FFT_INPUT_WIDTH = 32;                             // sizeof(float)
-const unsigned FFT_OUTPUT_WIDTH = FFT_INPUT_WIDTH;               // sizeof(float)
+const unsigned FFT_INPUT_WIDTH = 32;                                // sizeof(float)
+const unsigned FFT_OUTPUT_WIDTH = FFT_INPUT_WIDTH;                  // sizeof(float)
 
-const unsigned FFT_ROWS_NFFT_MAX = 6;                           // log2(MAT_ROWS)
-const unsigned FFT_COLS_NFFT_MAX = 6;                           // log2(MAT_COLS)
+const unsigned FFT_ROWS_NFFT_MAX = 8;                               // log2(MAT_ROWS)
+const unsigned FFT_COLS_NFFT_MAX = 8;                               // log2(MAT_COLS)
 
-const unsigned CONFIG_WIDTH = 8;
-const bool     HAS_NFFT = false;                                 // has runtime configurable length? No to save resources
+const unsigned CONFIG_WIDTH = 16;
+const bool     HAS_NFFT = false;                                    // has runtime configurable length? No to save resources
 
-const unsigned FFT_PHASE_FACTOR_WIDTH =  24;                     // internal phase factor precision (24-25 for floats)
-const unsigned ORDERING_OPT = hls::ip_fft::natural_order;        // Output data order (natural or bit-reversed?) bit-reversed is default
+const unsigned FFT_PHASE_FACTOR_WIDTH =  24;                        // internal phase factor precision (24-25 for floats)
+const unsigned ORDERING_OPT = hls::ip_fft::natural_order;           // Output data order (natural or bit-reversed?) bit-reversed is default
 
-const unsigned FFT_ROWS_STAGES_BLOCK_RAM = 1;                    // (max_nfft < 10) ? 0 : (max_nfft - 9) Defines the number of block RAM stages used in the implementation.
-const unsigned FFT_COLS_STAGES_BLOCK_RAM = 1;                    // (max_nfft < 10) ? 0 : (max_nfft - 9) Defines the number of block RAM stages used in the implementation.
+const unsigned FFT_ROWS_STAGES_BLOCK_RAM = 1;                       // (max_nfft < 10) ? 0 : (max_nfft - 9) Defines the number of block RAM stages used in the implementation.
+const unsigned FFT_COLS_STAGES_BLOCK_RAM = 1;                       // (max_nfft < 10) ? 0 : (max_nfft - 9) Defines the number of block RAM stages used in the implementation.
 
 const unsigned COMPLEX_MULT_TYPE = hls::ip_fft::use_mults_performance;
 const unsigned BUTTERFLY_TYPE    = hls::ip_fft::use_xtremedsp_slices;
@@ -83,16 +80,17 @@ typedef hls::ip_fft::status_t<apra_2dfft_config_col> statusCol_t;
 
 
 /***************       Data Types          ************/
-#define VECTOR_SIZE_ROW 8       // vectorize data streaming from/to row-wise fft; elements come from the same row
-#define VECTOR_SIZE_COL 4       // vectorize data streaming and computations in col-wise fft elements come from different cols
+#define VECTOR_SIZE_ROW 8       // vectorize data streaming from/to row-wise fft; 
+                                // elements come from the same row
+#define VECTOR_SIZE_COL 4       // vectorize data streaming and computations in 
+                                // col-wise fft elements come from different cols
 
 #define FFT_CORE_ROW_COUNT 2                    // number of cores working on row-wise fft in pipelined execution
 #define FFT_CORE_COL_COUNT (VECTOR_SIZE_COL)    // number of cores working on col-wise fft in parallel  execution
 
 
-
 typedef float data_t;
-typedef complex<data_t>  cmpx_data_t;
+typedef std::complex<data_t> cmpx_data_t;
 
 typedef hls::vector<cmpx_data_t, VECTOR_SIZE_ROW> vector_row_data_t;
 typedef hls::vector<cmpx_data_t, VECTOR_SIZE_COL> vector_col_data_t;
@@ -121,7 +119,7 @@ typedef hls::stream<cmpx_data_t> cmpx_stream_t;
  * @param scale         Overall fft scaling effect; must be 1/(n*n)
  * @param distance      The propagation distance in meters.
  * @param k_2           Squared wavenumber
- * @param kxy           kxy[i] = ((-(double)n / 2.0 + i) + 0.5) * delkx    for 0 <= i < n
+ * @param kxy           kxy[i] = ((-(float)n / 2.0 + i) + 0.5) * delkx    for 0 <= i < n
  *                      Where delkx = 2.0 * M_PI / (pixel_scale_d * n);
  *                      Where pixel_scale_d is the physical size of each pixel in the grid in units 
  *                      of [pixels/meter]. It determines the spatial resolution of the input wavefront.
@@ -137,10 +135,10 @@ typedef hls::stream<cmpx_data_t> cmpx_stream_t;
 extern "C" 
 void angular_spectrum(
     bool direction,
-    double scale,
-    double distance,
-    double k_2,
-    double *kxy,
+    data_t scale,
+    data_t distance,
+    data_t k_2,
+    data_t *kxy,
     cmpx_data_t *input_mat,
     cmpx_data_t *output_mat,
     cmpx_data_t *temp_mat_1, 
@@ -152,10 +150,10 @@ void angular_spectrum(
  * TODO: specs
  */
 void propagate_wave(
-    double scale,
-    double distance,
-    double k_2,
-    double *kxy,
+    data_t scale,
+    data_t distance,
+    data_t k_2,
+    data_t *kxy,
     hls::stream<vector_col_data_t> &first_output_matrix_col_major_strm,
     hls::stream<vector_col_data_t> &second_input_matrix_col_major_strm);
 

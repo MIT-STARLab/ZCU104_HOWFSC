@@ -1,10 +1,13 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified in Dec 29, 2024
+ * Last Modified by Subhi in Jan 6, 2025
  */
 
 #include "angular_spectrum_include.h"
+
+
+
 
 
 void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_data_t> &shifted_matrix_to_first_fft_strm)
@@ -130,43 +133,61 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
 }
 
 
+cmpx_data_t compute_tf_phase_element(
+    data_t scale,
+    data_t kxy_i,
+    data_t kxy_j,
+    data_t k_2,
+    data_t distance
+    )
+{
+    const data_t M_2PI = (M_PI * 2);
+
+    data_t kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
+    data_t kz2 = k_2 - kxy_sum;
+    data_t kz = hls::sqrt(kz2);
+    data_t kzd = kz * distance;
+    data_t kzd_mod_2PI = hls::fmod(kzd, M_2PI);
+
+    data_t sin_kzd = hls::sin(kzd_mod_2PI);
+    data_t cos_kzd = hls::cos(kzd_mod_2PI);
+    hls::complex<data_t> e_kzd(cos_kzd, sin_kzd);
+    return scale * e_kzd;
+}
+
 void propagate_wave(
-    double scale,
-    double distance,
-    double k_2,
-    double *kxy,
+    data_t scale,
+    data_t distance,
+    data_t k_2,
+    data_t *kxy,
     hls::stream<vector_col_data_t> &first_output_matrix_col_major_strm,
     hls::stream<vector_col_data_t> &second_input_matrix_col_major_strm)
 {
     // TODO: LITTLE'S LAW; PIPLINING?
+    const data_t M_2PI = (M_PI * 2);
 
     for (int col_tile=MAT_COLS/2; col_tile < MAT_COLS; col_tile+=VECTOR_SIZE_COL){
         // this is a quad1 indices that is supposed to be filled with quad4 content
         for (int row=MAT_ROWS/2; row < MAT_ROWS; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS UNROLL
-                double kxy_i = kxy[row];
-                double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
-                double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
-                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
+                #pragma HLS PIPELINE
+                data_t kxy_i = kxy[row];
+                data_t kxy_j = kxy[col_tile + i];
+                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
+
         }
 
         // this is a quad3 indices that is supposed to be filled with quad2 content
         for (int row=0; row < MAT_ROWS/2; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS UNROLL
-                double kxy_i = kxy[row];
-                double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
-                double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
-                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
+                #pragma HLS PIPELINE
+                data_t kxy_i = kxy[row];
+                data_t kxy_j = kxy[col_tile + i];
+                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -178,13 +199,10 @@ void propagate_wave(
         for (int row=MAT_ROWS/2; row < MAT_ROWS; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS UNROLL
-                double kxy_i = kxy[row];
-                double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
-                double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
-                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
+                #pragma HLS PIPELINE
+                data_t kxy_i = kxy[row];
+                data_t kxy_j = kxy[col_tile + i];
+                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -193,16 +211,12 @@ void propagate_wave(
         for (int row=0; row < MAT_ROWS/2; row++){
             vector_col_data_t coeff_vec;
             for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS UNROLL
-                double kxy_i = kxy[row];
-                double kxy_j = kxy[col_tile + i];
-                double kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
-                double kz = hls::sqrt(k_2 - kxy_sum);
-                complex<double> e_kzd(hls::cos(kz * distance), hls::sin(kz * distance));
-                coeff_vec[i] = (cmpx_data_t) (scale * e_kzd);
+                #pragma HLS PIPELINE
+                data_t kxy_i = kxy[row];
+                data_t kxy_j = kxy[col_tile + i];
+                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
-
         }
     }
 }
@@ -211,10 +225,10 @@ void propagate_wave(
 
 void angular_spectrum(
     bool direction,
-    double scale,
-    double distance,
-    double k_2,
-    double *kxy,
+    data_t scale,
+    data_t distance,
+    data_t k_2,
+    data_t *kxy,
     cmpx_data_t *input_mat,
     cmpx_data_t *output_mat,
     cmpx_data_t *temp_mat_1, 
@@ -226,7 +240,8 @@ void angular_spectrum(
     #pragma HLS INTERFACE s_axilite     port=distance
     #pragma HLS INTERFACE s_axilite     port=k_2
 
-    #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem3  depth = MAT_ROWS        //TODO: cache/BRAM
+    //TODO: cache/BRAM
+    #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem3  depth = MAT_ROWS
     #pragma HLS INTERFACE m_axi         port=input_mat        bundle=gmem0  depth = MAT_SIZE
     #pragma HLS INTERFACE m_axi         port=output_mat       bundle=gmem0  depth = MAT_SIZE
     #pragma HLS INTERFACE m_axi         port=temp_mat_1       bundle=gmem1  depth = MAT_SIZE
@@ -256,7 +271,14 @@ void angular_spectrum(
     fft_row_top(!direction, second_input_matrix_row_major_strm, second_output_matrix_row_major_strm);
 
     shifted_resolve_stream_from_second_fft(output_mat, second_output_matrix_row_major_strm);
+
+    // for just the transfer function
+    // propagate_wave(scale, distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
+    // stream_from_fft_col_to_fft_row(temp_mat_2, second_input_matrix_col_major_strm, second_input_matrix_row_major_strm);
+    // shifted_resolve_stream_from_second_fft(output_mat, second_input_matrix_row_major_strm);
 }
+
+
 
 
 
@@ -311,23 +333,22 @@ void fft_row_init(bool direction, hls::stream<configRow_t> &config_row)
 }
 
 
-void serialize_rows_in(hls::stream<vector_row_data_t> &matrix_to_row_strm, cmpx_stream_t &row_in1, cmpx_stream_t &row_in2)
-{
+void serialize_rows_in(hls::stream<vector_row_data_t> &matrix_to_row_strm, cmpx_stream_t &row_in1, cmpx_stream_t &row_in2){
+
     SERIALIZE_ROW_IN1:
     for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
-        #pragma HLS PIPELINE
+        #pragma HLS PIPELINE II=9
 
         vector_row_data_t row_segment1 = matrix_to_row_strm.read();
         for (int j = 0; j < VECTOR_SIZE_ROW; j++){
             #pragma HLS UNROLL
             row_in1 << row_segment1[j];
         }
-        
     }
 
     SERIALIZE_ROW_IN2:
     for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
-        #pragma HLS PIPELINE
+        #pragma HLS PIPELINE II=9
         vector_row_data_t row_segment2 = matrix_to_row_strm.read();
         for (int j = 0; j < VECTOR_SIZE_ROW; j++){
             #pragma HLS UNROLL
@@ -337,17 +358,17 @@ void serialize_rows_in(hls::stream<vector_row_data_t> &matrix_to_row_strm, cmpx_
     }
 }
 
-void serialize_rows_out(hls::stream<vector_row_data_t> &matrix_from_row_strm, cmpx_stream_t &row_out1, cmpx_stream_t &row_out2)
-{
+void serialize_rows_out(hls::stream<vector_row_data_t> &matrix_from_row_strm, cmpx_stream_t &row_out1, cmpx_stream_t &row_out2){
+
     SERIALIZE_ROW_OUT1:
     for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
 
-        #pragma HLS PIPELINE II=2
+        #pragma HLS PIPELINE II=9
         #pragma pragma HLS DATAFLOW
     
         vector_row_data_t row1_segment;
         for (int j = 0; j < VECTOR_SIZE_ROW; j++){
-            // #pragma HLS UNROLL
+            #pragma HLS UNROLL
             row1_segment[j] = row_out1.read();
         }
         matrix_from_row_strm << row1_segment;
@@ -357,16 +378,17 @@ void serialize_rows_out(hls::stream<vector_row_data_t> &matrix_from_row_strm, cm
     SERIALIZE_ROW_OUT2:
     for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
 
-        #pragma HLS PIPELINE II=2
+        #pragma HLS PIPELINE II=9
         #pragma pragma HLS DATAFLOW
     
         vector_row_data_t row2_segment;
         for (int j = 0; j < VECTOR_SIZE_ROW; j++){
-            // #pragma HLS UNROLL
+            #pragma HLS UNROLL
             row2_segment[j] = row_out2.read();
         }
         matrix_from_row_strm << row2_segment;
     }
+
 }
 
 

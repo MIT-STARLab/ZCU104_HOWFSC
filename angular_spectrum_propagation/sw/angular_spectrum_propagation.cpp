@@ -1,11 +1,30 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 15, 2024
+ * Last modified on January 16, 2024
  * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
  */
 
 #include "angular_spectrum_propagation.h"
+
+#define LINKER_EXPLICIT_INSTANTIATION_FLOAT
+#ifdef LINKER_EXPLICIT_INSTANTIATION_FLOAT
+template void angular_spectrum_propagation(std::complex<float>*, int n, float wavelength, float distance, float pixel_scale);
+template void propagate_ishifted(std::complex<float>* wavefront, int n, float wavelength, float distance, float pixel_scale, bool mod = false);
+template void propagate(std::complex<float>* wavefront, int n, float wavelength, float distance, float pixel_scale, bool mod = false);
+template void construct_transform_function(std::complex<float>* tf, int n, float wavelength, float distance, float pixel_scale, bool mod = false);
+template void construct_ishifted_transform_function(std::complex<float>* tf, int n, float wavelength, float distance, float pixel_scale, bool mod = false);
+template void generate_star_gaussian(std::complex<float>* arr, int size, float sigma, float intensity, float noise_stddev, bool noise = true);
+#endif // LINKER_EXPLICIT_INSTANTIATION_FLOAT
+
+#ifdef LINKER_EXPLICIT_INSTANTIATION_DOUBLE
+template void angular_spectrum_propagation(std::complex<double>*, int n, double wavelength, double distance, double pixel_scale);
+template void propagate_ishifted(std::complex<double>* wavefront, int n, double wavelength, double distance, double pixel_scale, bool mod = false);
+template void propagate(std::complex<double>* wavefront, int n, double wavelength, double distance, double pixel_scale, bool mod = false);
+template void construct_transform_function(std::complex<double>* tf, int n, double wavelength, double distance, double pixel_scale, bool mod = false);
+template void construct_ishifted_transform_function(std::complex<double>* tf, int n, double wavelength, double distance, double pixel_scale, bool mod = false);
+template void generate_star_gaussian(std::complex<double>* arr, int size, double sigma, double intensity, double noise_stddev, bool noise = true);
+#endif // LINKER_EXPLICIT_INSTANTIATION_DOUBLE
 
 /**
  * @details
@@ -46,7 +65,7 @@ void angular_spectrum_propagation(std::complex<T>* wavefront, int n, T wavelengt
     fftshift2d(wavefront, n, n);
     fft2d(wavefront, n, n, 0, 0);   // invert = 0; scale = 0; scaling is included in the propagation matrix
 
-    if constexpr (std::is_same_v<T, float>) { // compiler-time estimated
+    if constexpr (std::is_same<T, float>::value) { // compiler-time estimated
         propagate_ishifted(wavefront, n, wavelength, distance, pixel_scale, true);
     } else {
         propagate_ishifted(wavefront, n, wavelength, distance, pixel_scale, false);
