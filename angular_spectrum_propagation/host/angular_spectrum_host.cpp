@@ -1,7 +1,8 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last Modified by Subhi in Jan 6, 2025
+ * Last modified on January 16, 2024
+ * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
  */
 
 #include <cstring>
@@ -91,7 +92,7 @@ bool approx_equal(const cmpx_data_t &a, const cmpx_data_t &b, double tolerance) 
 /**
  * Validate results
  */
-void validate_results(cmpx_data_t *expected_output, cmpx_data_t *real_output, int data_size, double tolerance, bool save_to_files=false, bool print_errors = true){
+void validate_results(cmpx_data_t *expected_output, cmpx_data_t *real_output, int data_size, double tolerance, bool save_to_files, bool print_errors){
     std::cout << STR_INFO << "Start Validation" << std::endl;
 
     bool passed = true;
@@ -312,7 +313,7 @@ int main(int argc, char** argv) {
                            ELAPSED(syncOutputEnd, syncOutputTime));
 
     double tolerance = 1e-2;
-    validate_results(software_generated_input_data, bo_output_map, MAT_SIZE, tolerance, save_to_files = true, print_errors = print_errors);
+    validate_results(software_generated_input_data, bo_output_map, MAT_SIZE, tolerance, true, print_errors);
 
 
 
@@ -385,7 +386,7 @@ int main(int argc, char** argv) {
         device_exc_time_geometric_mean  *= ELAPSED(runTimeEnd, runTime);
 
         device_tot_time_arithmetic_mean += (ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime) + ELAPSED(runTimeEnd, runTime));
-        device_tot_time_arithmetic_mean *= (ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime) + ELAPSED(runTimeEnd, runTime));
+        device_tot_time_geometric_mean *= (ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime) + ELAPSED(runTimeEnd, runTime));
 
         printf(timing_summary,  MAT_ROWS, MAT_COLS, 
                                 ELAPSED(cpuTimeEnd, cpuTimeStart),
@@ -394,7 +395,7 @@ int main(int argc, char** argv) {
                                 ELAPSED(runTimeEnd, runTime),
                                 ELAPSED(runTimeEnd, runTime) + ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime));
 
-        validate_results(software_generated_input_data, bo_output_map, MAT_SIZE, tolerance, save_to_files = false, print_errors = print_errors);
+        validate_results(software_generated_input_data, bo_output_map, MAT_SIZE, tolerance, false, print_errors);
     }
 
     device_exc_time_arithmetic_mean /= rounds;
