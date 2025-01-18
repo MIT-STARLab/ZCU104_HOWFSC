@@ -224,6 +224,91 @@ void propagate_wave(
 
 
 
+
+void f1(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1)
+{
+    hls::stream<vector_row_data_t> first_input_matrix_row_major_strm;
+    hls::stream<vector_row_data_t> first_output_matrix_row_major_strm;
+
+    #pragma HLS DATAFLOW
+    shifted_stream_to_first_fft(input_mat, first_input_matrix_row_major_strm);
+    fft_row_top(direction, first_input_matrix_row_major_strm, first_output_matrix_row_major_strm);
+
+    vector_row_data_t* temp_mat_vec_row = (vector_row_data_t*) temp_mat_1;
+    STRAM_FROM_FFT_ROW:
+    for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){
+        #pragma HLS PIPELINE II=1
+        temp_mat_vec_row[i] = first_output_matrix_row_major_strm.read();
+    }
+}
+
+
+
+void f2(
+        bool direction,
+        cmpx_data_t *input_mat,
+        cmpx_data_t *temp_mat_1, 
+        data_t scale,
+        data_t distance,
+        data_t k_2,
+        data_t *kxy)
+{
+    hls::stream<vector_col_data_t> first_input_matrix_col_major_strm;
+    hls::stream<vector_col_data_t> first_output_matrix_col_major_strm;
+    hls::stream<vector_col_data_t> second_input_matrix_col_major_strm;
+    hls::stream<vector_col_data_t> second_output_matrix_col_major_strm;
+
+    #pragma HLS DATAFLOW
+
+    vector_col_data_t* temp_mat_vec_col = (vector_col_data_t*) temp_mat_1;
+    STRAM_TO_FFT_COL:
+    for (int j=0; j<MAT_COLS/VECTOR_SIZE_COL; j++){
+        for (int i=0; i<MAT_ROWS; i++){
+            
+            #pragma HLS PIPELINE II=1
+            first_input_matrix_col_major_strm << temp_mat_vec_col[i*(MAT_COLS/VECTOR_SIZE_COL) + j];   // stream the matrix in col major
+        }
+    }
+
+
+    fft_col_top(direction, first_input_matrix_col_major_strm, first_output_matrix_col_major_strm);
+    propagate_wave(scale, distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
+    fft_col_top(!direction, second_input_matrix_col_major_strm, second_output_matrix_col_major_strm);
+
+
+    vector_col_data_t* temp_mat_vec_col2 = (vector_col_data_t*) input_mat;
+
+    STRAM_FROM_FFT_COL:
+    for (int j=0; j<MAT_COLS/VECTOR_SIZE_COL; j++){
+        for (int i=0; i<MAT_ROWS; i++){
+            #pragma HLS PIPELINE II=1
+            temp_mat_vec_col2[i*(MAT_COLS/VECTOR_SIZE_COL) + j] = second_output_matrix_col_major_strm.read();
+        }
+    }
+}
+
+
+void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1)
+{
+
+    hls::stream<vector_row_data_t> second_input_matrix_row_major_strm;
+    hls::stream<vector_row_data_t> second_output_matrix_row_major_strm;
+
+    #pragma HLS DATAFLOW
+
+    vector_row_data_t* temp_mat_row_col = (vector_row_data_t*) input_mat;
+    STRAM_TO_FFT_ROW:
+    for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){               // (MAT_ROWS/ VECTOR_SIZE_ROW) * MAT_COLS
+        #pragma HLS PIPELINE II=1
+        second_input_matrix_row_major_strm << temp_mat_row_col[i];
+    }
+
+    fft_row_top(!direction, second_input_matrix_row_major_strm, second_output_matrix_row_major_strm);
+    shifted_resolve_stream_from_second_fft(temp_mat_1, second_output_matrix_row_major_strm);
+}
+
+
+
 void angular_spectrum(
     bool direction,
     data_t scale,
@@ -272,11 +357,38 @@ void angular_spectrum(
     fft_row_top(!direction, second_input_matrix_row_major_strm, second_output_matrix_row_major_strm);
 
     shifted_resolve_stream_from_second_fft(output_mat, second_output_matrix_row_major_strm);
+}
 
-    // for just the transfer function
-    // propagate_wave(scale, distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
-    // stream_from_fft_col_to_fft_row(temp_mat_2, second_input_matrix_col_major_strm, second_input_matrix_row_major_strm);
-    // shifted_resolve_stream_from_second_fft(output_mat, second_input_matrix_row_major_strm);
+
+
+// second design that uses only two buffers
+void angular_spectrum2(
+    bool direction,
+    data_t scale,
+    data_t distance,
+    data_t k_2,
+    data_t *kxy,
+    cmpx_data_t *input_mat,
+    cmpx_data_t *output_mat,
+    cmpx_data_t *temp_mat_1, 
+    cmpx_data_t *temp_mat_2
+    )
+{
+    #pragma HLS INTERFACE s_axilite     port=direction
+    #pragma HLS INTERFACE s_axilite     port=scale
+    #pragma HLS INTERFACE s_axilite     port=distance
+    #pragma HLS INTERFACE s_axilite     port=k_2
+
+    //TODO: cache/BRAM
+    #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem3  depth = MAT_ROWS
+    #pragma HLS INTERFACE m_axi         port=input_mat        bundle=gmem0  depth = MAT_SIZE
+    #pragma HLS INTERFACE m_axi         port=output_mat       bundle=gmem0  depth = MAT_SIZE
+    #pragma HLS INTERFACE m_axi         port=temp_mat_1       bundle=gmem1  depth = MAT_SIZE
+    #pragma HLS INTERFACE m_axi         port=temp_mat_2       bundle=gmem2  depth = MAT_SIZE
+
+    f1(direction,input_mat, temp_mat_1);
+    f2(direction,input_mat, temp_mat_1,  scale, distance, k_2, kxy);
+    f3(direction,input_mat, temp_mat_1);
 }
 
 

@@ -102,6 +102,10 @@ typedef hls::stream<cmpx_data_t> cmpx_stream_t;
 /***********************       Modules      ********************/
 /***************************************************************/
 
+// Design 2
+void f1(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1);
+void f2( bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1,  data_t scale, data_t distance, data_t k_2, data_t *kxy);
+void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1);
 
 /**
  * @brief Top-Level Module: Performs Angular Spectrum Propagation on a 2D Wavefront Input.
