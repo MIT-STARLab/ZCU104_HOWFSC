@@ -1,7 +1,7 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 16, 2024
+ * Last modified on January 21, 2024
  * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
  */
 
@@ -17,8 +17,8 @@
 
 
 /***** Matrix Parameters *****/
-#define MAT_ROWS 256
-#define MAT_COLS 256
+#define MAT_ROWS 128
+#define MAT_COLS 128
 #define MAT_SIZE (MAT_ROWS * MAT_COLS)
 
 
@@ -27,8 +27,8 @@
 const unsigned FFT_INPUT_WIDTH = 32;                                // sizeof(float)
 const unsigned FFT_OUTPUT_WIDTH = FFT_INPUT_WIDTH;                  // sizeof(float)
 
-const unsigned FFT_ROWS_NFFT_MAX = 8;                               // log2(MAT_ROWS)
-const unsigned FFT_COLS_NFFT_MAX = 8;                               // log2(MAT_COLS)
+const unsigned FFT_ROWS_NFFT_MAX = 7;                               // log2(MAT_ROWS)
+const unsigned FFT_COLS_NFFT_MAX = 7;                               // log2(MAT_COLS)
 
 const unsigned CONFIG_WIDTH = 16;
 const bool     HAS_NFFT = false;                                    // has runtime configurable length? No to save resources
@@ -102,11 +102,6 @@ typedef hls::stream<cmpx_data_t> cmpx_stream_t;
 /***********************       Modules      ********************/
 /***************************************************************/
 
-// Design 2
-void f1(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1);
-void f2( bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1,  data_t scale, data_t distance, data_t k_2, data_t *kxy);
-void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1);
-
 /**
  * @brief Top-Level Module: Performs Angular Spectrum Propagation on a 2D Wavefront Input.
  * 
@@ -123,7 +118,7 @@ void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1);
  * @param scale         Overall fft scaling effect; must be 1/(n*n)
  * @param distance      The propagation distance in meters.
  * @param k_2           Squared wavenumber
- * @param kxy           kxy[i] = ((-(float)n / 2.0 + i) + 0.5) * delkx    for 0 <= i < n
+ * @param kxy           kxy[i] = ((-(data_t)n / 2.0 + i) + 0.5) * delkx    for 0 <= i < n
  *                      Where delkx = 2.0 * M_PI / (pixel_scale_d * n);
  *                      Where pixel_scale_d is the physical size of each pixel in the grid in units 
  *                      of [pixels/meter]. It determines the spatial resolution of the input wavefront.
@@ -131,11 +126,8 @@ void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *temp_mat_1);
  * @param input_mat     Input array of size n * n in row-major order, represents the complex-valued 2D 
  *                      wavefront in the spatial domain. Where 
  * @param output_mat    On return, it contains the propagated wavefront in the spatial domain after propagation.
- * @param temp_mat_1    Buffer of size n * n. Needed for implemention
- * @param temp_mat_2    Buffer of size n * n. Needed for implemention
  * 
  */
-
 extern "C" 
 void angular_spectrum(
     bool direction,
@@ -144,15 +136,14 @@ void angular_spectrum(
     data_t k_2,
     data_t *kxy,
     cmpx_data_t *input_mat,
-    cmpx_data_t *output_mat,
-    cmpx_data_t *temp_mat_1, 
-    cmpx_data_t *temp_mat_2
-    );
+    cmpx_data_t *output_mat);
 
+// Kernel Execution Stages
+void f1(bool direction, cmpx_data_t *input_mat, cmpx_data_t *output_mat);
+void f2(bool direction, cmpx_data_t *input_mat, cmpx_data_t *output_mat,  data_t scale, data_t distance, data_t k_2, data_t *kxy);
+void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *output_mat);
 
-/**
- * TODO: specs
- */
+// Propagation Function
 void propagate_wave(
     data_t scale,
     data_t distance,
@@ -161,11 +152,17 @@ void propagate_wave(
     hls::stream<vector_col_data_t> &first_output_matrix_col_major_strm,
     hls::stream<vector_col_data_t> &second_input_matrix_col_major_strm);
 
+/**
+ * @brief Unit Function in Propagation Function
+ * 
+ * For a given point it calculates the phase element of the transfer function given by the equation:
+ *          (1/scale) * exp(d * sqrt(k_2 - kxy_i^2 - kxy_j^2))
+ */
+cmpx_data_t compute_tf_phase_element(data_t scale, data_t kxy_i, data_t kxy_j, data_t k_2, data_t distance);
+
+
 /////////      DATA FLOW CONTROL        //////////////
 //////////////////////////////////////////////////////
-/**
- * TODO: specs
- */
 void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_data_t> &shifted_matrix_to_first_fft_strm);
 void stream_from_fft_row_to_fft_col(cmpx_data_t *temp_mat,  hls::stream<vector_row_data_t> &matrix_from_row_strm,  hls::stream<vector_col_data_t> &matrix_to_col_strm);
 void stream_from_fft_col_to_fft_row(cmpx_data_t *temp_mat,  hls::stream<vector_col_data_t> &matrix_from_col_strm,  hls::stream<vector_row_data_t> &matrix_to_row_strm);
@@ -177,9 +174,6 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
 //////////////////////////////////////////////////////
 
 // Row Wise FFT
-/**
- * TODO: specs
- */
 void fft_row_top(bool direction, hls::stream<vector_row_data_t> &matrix_to_row_strm, hls::stream<vector_row_data_t> &matrix_from_row_strm);
 void serialize_rows_in(hls::stream<vector_row_data_t> &matrix_to_row_strm, cmpx_stream_t &row_in1, cmpx_stream_t &row_in2);
 void serialize_rows_out(hls::stream<vector_row_data_t> &matrix_from_row_strm, cmpx_stream_t &row_out1, cmpx_stream_t &row_out2);
@@ -188,10 +182,6 @@ void fft_row_init(bool direction, hls::stream<configRow_t> &config_row);
 
 
 // Col Wise FFT 
-/**
- * TODO: specs
- */
-
 void fft_col_top(bool direction, hls::stream<vector_col_data_t> &matrix_to_col_strm, hls::stream<vector_col_data_t> &matrix_from_col_strm);
 void distibute_cols_in(hls::stream<vector_col_data_t> &matrix_to_col_strm, cmpx_stream_t &col_in1, cmpx_stream_t &col_in2, cmpx_stream_t &col_in3, cmpx_stream_t &col_in4);
 void distibute_cols_out(hls::stream<vector_col_data_t> &matrix_from_col_strm, cmpx_stream_t &col_out1, cmpx_stream_t &col_out2, cmpx_stream_t &col_out3, cmpx_stream_t &col_out4);

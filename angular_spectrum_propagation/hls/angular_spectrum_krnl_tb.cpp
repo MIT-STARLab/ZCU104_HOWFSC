@@ -13,7 +13,7 @@
 #include <cmath>
 #include <random>
 
-#include "angular_spectrum_include.h"
+#include "angular_spectrum_krnl.h"
 #include "angular_spectrum_propagation.h"
 
 using namespace std;
@@ -83,16 +83,12 @@ void validate_results(cmpx_data_t *expected_output, cmpx_data_t *real_output, in
 
 }
 
-//// MUST DECLARE HERE NOT IN MAIN;
+
 cmpx_data_t software_generated_data[MAT_SIZE];
 
 cmpx_data_t hardware_input_data[MAT_SIZE];
 cmpx_data_t hardware_output_data[MAT_SIZE];
-cmpx_data_t hardware_temp1_data[MAT_SIZE];
-cmpx_data_t hardware_temp2_data[MAT_SIZE];
 data_t kxy[MAT_ROWS];
-
-
 
 int main() {
     cout << "INFO:  starting angular spectrum propagation kernal testbench" << endl;
@@ -104,9 +100,9 @@ int main() {
     data_t noise_stddev = 0.01;
     bool   noise        = true;
 
-    float wavelength   = 500e-9;
-    float distance     = 1000e-3;
-    float pixel_scale  = 10e-3 / (MAT_ROWS / 2);
+    data_t wavelength   = 500e-9;
+    data_t distance     = 1000e-3;
+    data_t pixel_scale  = 10e-3 / ((data_t)MAT_ROWS / 2);
 
     data_t delkx = 2.0 * M_PI / (pixel_scale * MAT_ROWS);
     data_t k = 2.0 * M_PI / wavelength;
@@ -133,13 +129,8 @@ int main() {
         k_2,
         kxy,
         hardware_input_data,
-        hardware_output_data,
-        hardware_temp1_data,
-        hardware_temp2_data
+        hardware_output_data
         );
-    
-    // new design
-    std::memcpy(hardware_output_data, hardware_temp1_data, sizeof(hardware_temp1_data));
 
     cout << "Saving Results to files <software_output.txt> and <hardware_output.txt>" << endl;
     ofstream hardware_output_file("hardware_output.txt");

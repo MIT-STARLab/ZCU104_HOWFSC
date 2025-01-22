@@ -183,8 +183,6 @@ int main(int argc, char** argv) {
     //              data_t *kxy,
     //              cmpx_data_t *input_mat,
     //              cmpx_data_t *output_mat,
-    //              cmpx_data_t *temp_mat_1, 
-    //              cmpx_data_t *temp_mat_2
     // );
 
     // Starting the (HLS) PL kernel
@@ -203,15 +201,11 @@ int main(int argc, char** argv) {
                                                                                                         // kernel argument 3: data_t k_2
     auto bo_kxy   = xrt::bo(my_device, MAT_ROWS * sizeof(data_t), XCL_BO_FLAGS_NONE, krnl.group_id(4)); // kernel argument 4: data_t *kxy,
     auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5));             // kernel argument 5: input  matrix array
-    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6));             // kernel argument 6: output matrix array
-    auto bo_temp1 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(7));             // kernel argument 7: temp_mat_1 array
-    auto bo_temp2 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(8));             // kernel argument 8: temp_mat_2 array
+    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6));            // kernel argument 6: output matrix array
 
     std::cout << STR_PASSED << "auto bo_kxy   = xrt::bo(my_device, MAT_ROWS * sizeof(data_t), XCL_BO_FLAGS_NONE, krnl.group_id(4)) (=" << krnl.group_id(1) << "))" << std::endl;
     std::cout << STR_PASSED << "auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5)) (=" << krnl.group_id(5) << "))" << std::endl;
     std::cout << STR_PASSED << "auto bo_ouput = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6)) (=" << krnl.group_id(6) << "))" << std::endl;
-    std::cout << STR_PASSED << "auto bo_temp1 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(7)) (=" << krnl.group_id(7) << "))" << std::endl;
-    std::cout << STR_PASSED << "auto bo_temp2 = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(8)) (=" << krnl.group_id(8) << "))" << std::endl;
 
     //Map the contents of the buffer object into host memory
     auto bo_kxy_map     = bo_kxy.map<data_t*>();
@@ -254,12 +248,6 @@ int main(int argc, char** argv) {
     std::cout << STR_INFO << "Filling Argument Buffers with input data" << std::endl;
     std::memcpy(bo_input_map, software_generated_input_data, MAT_SIZE * sizeof(cmpx_data_t));
     std::memcpy(bo_kxy_map, kxy, MAT_ROWS * sizeof(data_t));
-    // for (int i = 0; i < MAT_SIZE; i++) {
-    //     bo_input_map[i] = software_generated_input_data[i];
-    // }
-    // for (int i = 0; i < MAT_ROWS; i++) {
-    //     bo_kxy_map[i] = kxy[i];
-    // }
 
 
     ////////////////              Kernel Excution                 //////////////////////////
@@ -290,9 +278,7 @@ int main(int argc, char** argv) {
                 k_2,
                 bo_kxy,
                 bo_input,
-                bo_output,
-                bo_temp1, 
-                bo_temp2
+                bo_output
                 );
     run.wait();
     TIMER(runTimeEnd);
