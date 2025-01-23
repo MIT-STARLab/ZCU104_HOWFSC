@@ -135,18 +135,35 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
  * needed the order of magnitude of the integer part is high.
  */
 cmpx_data_t compute_tf_phase_element(data_t scale, data_t kxy_i, data_t kxy_j, data_t k_2, data_t distance){
+
+    data_t kxy_sum;
+    data_t kz2;
+    data_t kz;
+    data_t kzd;
+    data_t kzd_mod_2PI;
+    data_t sin_kzd;
+    data_t cos_kzd;
+    hls::complex<data_t> phase_element;
+
+    // #pragma HLS BIND_OP  variable=kxy_sum 		    op=fmul 	impl=primitivedsp  // not supported on zcu104
+    // #pragma HLS BIND_OP  variable=kxy_sum 		    op=fadd 	impl=primitivedsp  // not supported on zcu104
+    // #pragma HLS BIND_OP  variable=kz2 			    op=fsub 	impl=primitivedsp  // not supported on zcu104
+    // #pragma HLS BIND_OP  variable=kzd 			    op=fmul 	impl=primitivedsp  // not supported on zcu104
+    // #pragma HLS BIND_OP  variable=phase_element 	    op=fmul 	impl=primitivedsp  // not supported on zcu104
+
     const data_t M_2PI = (M_PI * 2);
 
-    data_t kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
-    data_t kz2 = k_2 - kxy_sum;
-    data_t kz = hls::sqrt(kz2);
-    data_t kzd = kz * distance;
-    data_t kzd_mod_2PI = hls::fmod(kzd, M_2PI);
+    kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
+    kz2 = k_2 - kxy_sum;
+    kz = hls::sqrt(kz2);
+    kzd = kz * distance;
+    kzd_mod_2PI = hls::fmod(kzd, M_2PI);
 
-    data_t sin_kzd = hls::sin(kzd_mod_2PI);
-    data_t cos_kzd = hls::cos(kzd_mod_2PI);
+    sin_kzd = hls::sin(kzd_mod_2PI);
+    cos_kzd = hls::cos(kzd_mod_2PI);
     hls::complex<data_t> e_kzd(cos_kzd, sin_kzd);
-    return scale * e_kzd;
+    phase_element = scale * e_kzd;
+    return phase_element;
 }
 
 void propagate_wave(
@@ -158,16 +175,20 @@ void propagate_wave(
     hls::stream<vector_col_data_t> &second_input_matrix_col_major_strm)
 {
     // TODO: LITTLE'S LAW; PIPLINING?
+    hls::vector<data_t, VECTOR_SIZE_COL> *kxy_col_vectors = (hls::vector<data_t, VECTOR_SIZE_COL> *) kxy;
 
+    int col_tile_index1 = MAT_COLS/(2*VECTOR_SIZE_COL);
     for (int col_tile=MAT_COLS/2; col_tile < MAT_COLS; col_tile+=VECTOR_SIZE_COL){
+        hls::vector<data_t, VECTOR_SIZE_COL> kxy_j_vec = kxy_col_vectors[col_tile_index1];
+
         // this is a quad1 indices that is supposed to be filled with quad4 content
         for (int row=MAT_ROWS/2; row < MAT_ROWS; row++){
             vector_col_data_t coeff_vec;
-            for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS PIPELINE
-                data_t kxy_i = kxy[row];
-                data_t kxy_j = kxy[col_tile + i];
-                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
+            data_t kxy_i = kxy[row];
+
+            for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
+                #pragma HLS UNROLL factor
+                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
 
@@ -176,26 +197,28 @@ void propagate_wave(
         // this is a quad3 indices that is supposed to be filled with quad2 content
         for (int row=0; row < MAT_ROWS/2; row++){
             vector_col_data_t coeff_vec;
-            for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS PIPELINE
-                data_t kxy_i = kxy[row];
-                data_t kxy_j = kxy[col_tile + i];
-                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
+            data_t kxy_i = kxy[row];
+            for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
+                #pragma HLS UNROLL factor
+                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
+
+        col_tile_index1++;
     }
 
-
+    int col_tile_index2 = 0;
     for (int col_tile=0; col_tile <MAT_COLS/2; col_tile+=VECTOR_SIZE_COL){
+        hls::vector<data_t, VECTOR_SIZE_COL> kxy_j_vec = kxy_col_vectors[col_tile_index2];
+
         // this is a quad2 indices that is supposed to be filled with quad3 content
         for (int row=MAT_ROWS/2; row < MAT_ROWS; row++){
             vector_col_data_t coeff_vec;
-            for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS PIPELINE
-                data_t kxy_i = kxy[row];
-                data_t kxy_j = kxy[col_tile + i];
-                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
+            data_t kxy_i = kxy[row];
+            for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
+                #pragma HLS UNROLL factor
+                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -203,14 +226,14 @@ void propagate_wave(
         // this is a quad4 indices that is supposed to be filled with quad1 content
         for (int row=0; row < MAT_ROWS/2; row++){
             vector_col_data_t coeff_vec;
-            for (int i=0; i<VECTOR_SIZE_COL; i++){
-                #pragma HLS PIPELINE
-                data_t kxy_i = kxy[row];
-                data_t kxy_j = kxy[col_tile + i];
-                coeff_vec[i] = compute_tf_phase_element( scale, kxy_i, kxy_j, k_2, distance);
+            data_t kxy_i = kxy[row];
+            for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
+                #pragma HLS UNROLL factor
+                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
+        col_tile_index2++;
     }
 }
 
@@ -310,20 +333,32 @@ void angular_spectrum(
     cmpx_data_t *output_mat
     )
 {
+    #pragma HLS top name=angular_spectrum
+
     #pragma HLS INTERFACE s_axilite     port=direction
     #pragma HLS INTERFACE s_axilite     port=scale
     #pragma HLS INTERFACE s_axilite     port=distance
     #pragma HLS INTERFACE s_axilite     port=k_2
 
-    //TODO: cache/BRAM/ULTRARAM optimizations
     #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem2  depth = MAT_ROWS
     #pragma HLS INTERFACE m_axi         port=input_mat        bundle=gmem0  depth = MAT_SIZE
     #pragma HLS INTERFACE m_axi         port=output_mat       bundle=gmem1  depth = MAT_SIZE
 
+    data_t kxy_uram[MAT_ROWS]; //total size
+    #pragma HLS BIND_STORAGE variable=kxy_uram  type=RAM_2P   impl=uram
+    for (int i=0; i<MAT_ROWS; i++){ kxy_uram[i] = kxy[i]; }
+
+    // Sequential, not DATAFLOW 
     f1(direction,input_mat, output_mat);
-    f2(direction,input_mat, output_mat,  scale, distance, k_2, kxy);
+    f2(direction,input_mat, output_mat,  scale, distance, k_2, kxy_uram);
     f3(direction,input_mat, output_mat);
 }
+
+
+
+
+
+
 
 
 
