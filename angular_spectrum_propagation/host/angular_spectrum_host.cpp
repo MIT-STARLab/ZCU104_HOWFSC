@@ -1,8 +1,8 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 16, 2024
- * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
+ * Last modified on January 24, 2024
+ * Angular Spectrum Propagation Method FPGA HLS Implementation: HOST APPLICATION
  */
 
 #include <cstring>
@@ -29,8 +29,8 @@
 typedef float data_t;
 typedef std::complex<float> cmpx_data_t;
 
-#define MAT_ROWS 256
-#define MAT_COLS 256
+#define MAT_ROWS 1024
+#define MAT_COLS 1024
 #define MAT_SIZE (MAT_ROWS * MAT_COLS)
 
 #define TIMER(label)  timespec label; syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &label)
@@ -51,7 +51,7 @@ static const char* error_message =
     "\tRelative error in imag component = %f\n";
 
 static const char* timing_summary = 
-    "Round Run Time:\n"
+    "Round %d Run Time:\n"
     "-------------------------\n"
     "Matrix Dimension Size =   (%d, %d)\n"
     "Total CPU Time        =   %f\n"
@@ -149,11 +149,12 @@ int main(int argc, char** argv) {
 
     // Check command line arguments
     if(argc < 2) {
-        std::cout << STR_USAGE << argv[0] <<" <binary_container.xclbin> <trails> <print_errors>" <<std::endl;
+        std::cout << STR_USAGE << argv[0] <<" <binary_container.xclbin> <trails> <sigma> <print_errors>" <<std::endl;
         return EXIT_FAILURE;
     }
-    int rounds = (argc < 3)? 10: std::stoi(argv[2]);
-    bool print_errors = (argc < 4 || argc < 3)? 1: std::stoi(argv[3]);
+    int rounds = (argc < 3)? 5: std::stoi(argv[2]);
+    int input_sigma = (argc < 4)? 1: std::stoi(argv[3]);
+    bool print_errors = (argc < 5)? 0: std::stoi(argv[4]);
 
     ////////////////     Initialize XRT device and load xclbin    //////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -176,13 +177,12 @@ int main(int argc, char** argv) {
     ////////////////////////////////////////////////////////////////////////////////////////
     // HLS interface
     // void angular_spectrum(
-    //              bool direction,
-    //              data_t scale,
-    //              data_t distance,
-    //              data_t k_2,
-    //              data_t *kxy,
-    //              cmpx_data_t *input_mat,
-    //              cmpx_data_t *output_mat,
+    //     bool direction,
+    //     data_t distance,
+    //     data_t k_2,
+    //     data_t delkx,
+    //     cmpx_data_t *input_mat,
+    //     cmpx_data_t *output_mat
     // );
 
     // Starting the (HLS) PL kernel
@@ -196,23 +196,19 @@ int main(int argc, char** argv) {
     std::cout << STR_INFO << "Matrix size in words  = " << MAT_SIZE  * 2   << std::endl;
     std::cout << STR_INFO << "Matrix size in bytes  = " << size_in_bytes   << std::endl;
                                                                                                         // kernel argument 0: bool direction
-                                                                                                        // kernel argument 1: data_t scale
-                                                                                                        // kernel argument 2: data_t distance
-                                                                                                        // kernel argument 3: data_t k_2
-    auto bo_kxy   = xrt::bo(my_device, MAT_ROWS * sizeof(data_t), XCL_BO_FLAGS_NONE, krnl.group_id(4)); // kernel argument 4: data_t *kxy,
-    auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5));             // kernel argument 5: input  matrix array
-    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6));            // kernel argument 6: output matrix array
+                                                                                                        // kernel argument 1: data_t distance
+                                                                                                        // kernel argument 2: data_t k_2
+                                                                                                        // kernel argument 3: data_t delkx,
+    auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(4));             // kernel argument 4: input  matrix array
+    auto bo_output = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5));            // kernel argument 5: output matrix array
 
-    std::cout << STR_PASSED << "auto bo_kxy   = xrt::bo(my_device, MAT_ROWS * sizeof(data_t), XCL_BO_FLAGS_NONE, krnl.group_id(4)) (=" << krnl.group_id(1) << "))" << std::endl;
-    std::cout << STR_PASSED << "auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5)) (=" << krnl.group_id(5) << "))" << std::endl;
-    std::cout << STR_PASSED << "auto bo_ouput = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(6)) (=" << krnl.group_id(6) << "))" << std::endl;
+    std::cout << STR_PASSED << "auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(4)) (=" << krnl.group_id(4) << "))" << std::endl;
+    std::cout << STR_PASSED << "auto bo_ouput = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(5)) (=" << krnl.group_id(5) << "))" << std::endl;
 
     //Map the contents of the buffer object into host memory
-    auto bo_kxy_map     = bo_kxy.map<data_t*>();
     auto bo_input_map   = bo_input.map<cmpx_data_t*>();
     auto bo_output_map  = bo_output.map<cmpx_data_t*>();
 
-    std::cout << STR_PASSED << "auto bo_kxy_map    = bo_kxy.map<data_t*>()"         << std::endl;
     std::cout << STR_PASSED << "auto bo_input_map  = bo_input.map<cmpx_data_t*>()"  << std::endl;
     std::cout << STR_PASSED << "auto bo_output_map = bo_output.map<cmpx_data_t*>()" << std::endl;
 
@@ -223,31 +219,28 @@ int main(int argc, char** argv) {
 
     std::cout << STR_INFO << "Generating Testing Data..." << std::endl;
 
-    bool inverse_fft   = false;
-    data_t sigma       = 1;
+    // source light parameters 
+    data_t sigma       = input_sigma;
     data_t intensity   = 1e5;
     data_t noise_stddev= 0.01;
+
+    // telescope parameters 
+    bool inverse_fft   = false;
     data_t wavelength  = 500e-9;
     data_t pixel_scale = 10e-3 / (MAT_ROWS / 2);
     data_t distance    = 1000e-3;
     data_t delkx = 2.0 * M_PI / (pixel_scale * MAT_ROWS);
     data_t k = 2.0 * M_PI / wavelength;
     data_t k_2 = k*k;
-    data_t scale = (1/(data_t)MAT_SIZE);
 
-    data_t* kxy = new data_t[MAT_ROWS];
-    cmpx_data_t* software_generated_input_data  = new cmpx_data_t[MAT_SIZE];
-
+    cmpx_data_t* software_generated_input_data = new cmpx_data_t[MAT_SIZE];
     generate_star_gaussian(software_generated_input_data, MAT_ROWS, sigma, intensity, noise_stddev);
-    for (int i = 0; i < MAT_ROWS; i++){
-        kxy[i] = ((-(data_t)MAT_ROWS / 2.0 + i) + 0.5) * delkx; // Center bins
-    }
 
     std::cout << STR_PASSED << "Testing Data Generated" << std::endl;
 
+
     std::cout << STR_INFO << "Filling Argument Buffers with input data" << std::endl;
     std::memcpy(bo_input_map, software_generated_input_data, MAT_SIZE * sizeof(cmpx_data_t));
-    std::memcpy(bo_kxy_map, kxy, MAT_ROWS * sizeof(data_t));
 
 
     ////////////////              Kernel Excution                 //////////////////////////
@@ -263,20 +256,16 @@ int main(int argc, char** argv) {
     std::cout << STR_INFO << "synchronize input buffer data to device global memory" << std::endl;
     TIMER(syncInputTime);
     bo_input.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-    bo_kxy.sync(XCL_BO_SYNC_BO_TO_DEVICE);
     TIMER(syncInputTimeEnd);
     std::cout << STR_PASSED << "bo_input.sync(XCL_BO_SYNC_BO_TO_DEVICE)" << std::endl;
-    std::cout << STR_PASSED << "bo_kxy.sync(XCL_BO_SYNC_BO_TO_DEVICE)" << std::endl;
-
 
     std::cout << STR_INFO <<  "Execution of the kernel" << std::endl;
     TIMER(runTime);
     auto run = krnl(
                 inverse_fft, 
-                scale,
                 distance,
                 k_2,
-                bo_kxy,
+                delkx,
                 bo_input,
                 bo_output
                 );
@@ -291,7 +280,7 @@ int main(int argc, char** argv) {
     std::cout << STR_PASSED << "bo_output.sync(XCL_BO_SYNC_BO_FROM_DEVICE)" << std::endl;
 
     // TIMING
-    printf(timing_summary, MAT_ROWS, MAT_COLS, 
+    printf(timing_summary, 0, MAT_ROWS, MAT_COLS, 
                            ELAPSED(cpuTimeEnd, cpuTimeStart),
                            ELAPSED(syncOutputEnd, syncInputTime), 
                            ELAPSED(syncInputTimeEnd, syncInputTime), 
@@ -322,9 +311,11 @@ int main(int argc, char** argv) {
     for (int r=0; r<rounds; r++){
         std::cout << STR_INFO << "STARTING ROUND : " << r << std::endl;
 
-        // change testing parameters each round
+        // change testing parameters each round: maybe?
+        sigma       = input_sigma;
         intensity   = 1e5;
         noise_stddev= 0.01;
+
         wavelength  = 500e-9;
         pixel_scale = 10e-3 / (MAT_ROWS / 2);
         distance    = 1000e-3;
@@ -332,14 +323,9 @@ int main(int argc, char** argv) {
         k = 2.0 * M_PI / wavelength;
         k_2 = k*k;
 
-        for (int i = 0; i < MAT_ROWS; i++){
-            kxy[i] = ((-(float)MAT_ROWS / 2.0 + i) + 0.5) * delkx; // Center bins
-        }
-
         generate_star_gaussian(software_generated_input_data, MAT_ROWS, sigma, intensity, noise_stddev);
 
         std::memcpy(bo_input_map, software_generated_input_data, MAT_SIZE * sizeof(cmpx_data_t));
-        std::memcpy(bo_kxy_map, kxy, MAT_ROWS * sizeof(float));
 
         TIMER(cpuTimeStart);
         angular_spectrum_propagation(software_generated_input_data, MAT_ROWS, wavelength, distance, pixel_scale);
@@ -350,13 +336,12 @@ int main(int argc, char** argv) {
 
 
         // propagate any argument changes to kerenl
-        run.set_arg(1, scale);
-        run.set_arg(2, distance);
-        run.set_arg(3, k_2);
+        run.set_arg(1, distance);
+        run.set_arg(2, k_2);
+        run.set_arg(3, delkx);
 
         TIMER(syncInputTime);
         bo_input.sync(XCL_BO_SYNC_BO_TO_DEVICE);
-        bo_kxy.sync(XCL_BO_SYNC_BO_TO_DEVICE);
         TIMER(syncInputTimeEnd);
 
         TIMER(runTime);
@@ -374,7 +359,7 @@ int main(int argc, char** argv) {
         device_tot_time_arithmetic_mean += (ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime) + ELAPSED(runTimeEnd, runTime));
         device_tot_time_geometric_mean *= (ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime) + ELAPSED(runTimeEnd, runTime));
 
-        printf(timing_summary,  MAT_ROWS, MAT_COLS, 
+        printf(timing_summary,  r+1, MAT_ROWS, MAT_COLS, 
                                 ELAPSED(cpuTimeEnd, cpuTimeStart),
                                 ELAPSED(syncOutputTimeEnd, syncOutputTime), 
                                 ELAPSED(syncInputTimeEnd, syncInputTime), 

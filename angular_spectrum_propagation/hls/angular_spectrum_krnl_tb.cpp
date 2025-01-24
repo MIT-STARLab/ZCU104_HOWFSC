@@ -1,8 +1,8 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 16, 2024
- * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
+ * Last modified on January 24, 2024
+ * Angular Spectrum Propagation Method FPGA HLS Implementation: TEST BENCH
  */
 
 #include <iostream>
@@ -88,7 +88,6 @@ cmpx_data_t software_generated_data[MAT_SIZE];
 
 cmpx_data_t hardware_input_data[MAT_SIZE];
 cmpx_data_t hardware_output_data[MAT_SIZE];
-data_t kxy[MAT_ROWS];
 
 int main() {
     cout << "INFO:  starting angular spectrum propagation kernal testbench" << endl;
@@ -107,7 +106,6 @@ int main() {
     data_t delkx = 2.0 * M_PI / (pixel_scale * MAT_ROWS);
     data_t k = 2.0 * M_PI / wavelength;
     data_t k_2 = k*k;
-    data_t scale = (1/(data_t) MAT_SIZE);
 
     generate_star_gaussian(software_generated_data, MAT_ROWS, sigma, intensity, noise_stddev, noise);
     cout << STR_PASSED <<"generate_star_gaussian" << endl;
@@ -118,16 +116,11 @@ int main() {
 
 
     cout << "Call the angular spectrum propagation Kernel" << endl;
-    for (int i = 0; i < MAT_ROWS; i++){
-        kxy[i] = ((-(data_t)MAT_ROWS / 2.0 + i) + 0.5) * delkx; // Center bins
-    }
-
     angular_spectrum( // krnl
         true,   // direction
-        scale,
         distance,
         k_2,
-        kxy,
+        delkx,
         hardware_input_data,
         hardware_output_data
         );

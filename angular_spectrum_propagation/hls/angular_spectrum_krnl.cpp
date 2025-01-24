@@ -1,18 +1,70 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 23, 2024
- * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
+ * Last modified on January 24, 2024
+ * Angular Spectrum Propagation Method FPGA HLS Implementation: SOURCE CODE
  */
 
 #include "angular_spectrum_krnl.h"
 
 
-void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_data_t> &shifted_matrix_to_first_fft_strm)
-{
-    vector_row_data_t* input_mat_vec = (vector_row_data_t*) input_mat;
+const data_t SCALE = (1/(float) MAT_SIZE);
+const data_t M_2PI = (M_PI * 2);
 
-    int start_index = ((MAT_SIZE/2)/VECTOR_SIZE_ROW) + (MAT_ROWS/2)/VECTOR_SIZE_ROW;
+
+/////////      DATA FLOW CONTROL        //////////////
+//////////////////////////////////////////////////////
+
+
+void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<burst_vector_data_t> &shifted_matrix_to_first_fft_strm)
+{
+    burst_vector_data_t* input_mat_vec = (burst_vector_data_t*) input_mat;
+
+    SHIFTED_STREAM_TO_FIRST_FFT_UPPER_HALF:
+        for (int i= ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE); i<(MAT_SIZE/BURST_TRANSFER_VEC_SIZE); i+= (MAT_ROWS/BURST_TRANSFER_VEC_SIZE)){
+
+            // half a row from quad 4
+            SHIFTED_STREAM_TO_FIRST_FFT_QUAD4:
+            for (int j=(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j<MAT_ROWS/BURST_TRANSFER_VEC_SIZE; j++){
+                #pragma HLS PIPELINE II=1
+                shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
+            }
+
+            SHIFTED_STREAM_TO_FIRST_FFT_QUAD3:
+            // then, half a row from quad 3
+            for (int j=0; j<(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j++){
+                #pragma HLS PIPELINE II=1
+                shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
+            }
+        }
+
+    SHIFTED_STREAM_TO_FIRST_FFT_LOWER_HALF:
+        for (int i= 0; i<(MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE; i+= MAT_ROWS/BURST_TRANSFER_VEC_SIZE){
+
+            // half a row from quad 2
+            SHIFTED_STREAM_TO_FIRST_FFT_QUAD2:
+            for (int j=(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j<MAT_ROWS/BURST_TRANSFER_VEC_SIZE; j++){
+                #pragma HLS PIPELINE II=1
+                shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
+            }
+
+            SHIFTED_STREAM_TO_FIRST_FFT_QUAD1:
+            // then, half a row from quad 1
+            for (int j=0; j<(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j++){
+                #pragma HLS PIPELINE II=1
+                shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
+            }
+        }
+}
+
+
+
+
+void shifted_stream_to_first_fft_optimized(cmpx_data_t *input_mat, hls::stream<burst_vector_data_t> &shifted_matrix_to_first_fft_strm)
+{
+    burst_vector_data_t* input_mat_vec = (burst_vector_data_t*) input_mat;
+
+    int start_index = ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE) + (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE;
     int index = start_index;
     bool flag_add = false;
     int run_step = 0;
@@ -21,25 +73,25 @@ void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_
     SHIFTED_STREAM_TO_FIRST_FFT_UPPER_HALF:
     for (int runs_so_far = 0; runs_so_far<MAT_ROWS; runs_so_far+=run_step){
         #pragma HLS pipeline
-        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/VECTOR_SIZE_ROW)  max = ((MAT_SIZE/2)/VECTOR_SIZE_ROW)
+        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE)  max = ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE)
         shifted_matrix_to_first_fft_strm << input_mat_vec[index];
         index++;
         count++;
         run_step = 0;
-        if (count == (MAT_ROWS/2)/VECTOR_SIZE_ROW){
+        if (count == (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE){
             run_step = 1;
             count = 0;
             if (flag_add){
-                index += MAT_ROWS/VECTOR_SIZE_ROW;
+                index += MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             else {
-                index -= MAT_ROWS/VECTOR_SIZE_ROW;
+                index -= MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             flag_add = !flag_add;
         }
     }
 
-    start_index = (MAT_ROWS/2)/VECTOR_SIZE_ROW;
+    start_index = (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE;
     index = start_index;
     flag_add = false;
     run_step = 0;
@@ -48,19 +100,19 @@ void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_
     SHIFTED_STREAM_TO_FIRST_FFT_LOWER_HALF:
     for (int runs_so_far = 0; runs_so_far<MAT_ROWS; runs_so_far+=run_step){
         #pragma HLS pipeline
-        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/VECTOR_SIZE_ROW) max = ((MAT_SIZE/2)/VECTOR_SIZE_ROW)
+        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE) max = ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE)
         shifted_matrix_to_first_fft_strm << input_mat_vec[index];
         index++;
         count++;
         run_step = 0;
-        if (count == (MAT_ROWS/2)/VECTOR_SIZE_ROW){
+        if (count == (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE){
             run_step = 1;
             count = 0;
             if (flag_add){
-                index += MAT_ROWS/VECTOR_SIZE_ROW;
+                index += MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             else {
-                index -= MAT_ROWS/VECTOR_SIZE_ROW;
+                index -= MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             flag_add = !flag_add;
         }
@@ -68,53 +120,14 @@ void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_
 
 }
 
-// void shifted_stream_to_first_fft(cmpx_data_t *input_mat, hls::stream<vector_row_data_t> &shifted_matrix_to_first_fft_strm)
-// {
-//     vector_row_data_t* input_mat_vec = (vector_row_data_t*) input_mat;
-
-//     SHIFTED_STREAM_TO_FIRST_FFT_UPPER_HALF:
-//         for (int i= ((MAT_SIZE/2)/VECTOR_SIZE_ROW); i<(MAT_SIZE/VECTOR_SIZE_ROW); i+= (MAT_ROWS/VECTOR_SIZE_ROW)){
-
-//             // half a row from quad 4
-//             SHIFTED_STREAM_TO_FIRST_FFT_QUAD4:
-//             for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
-//                 #pragma HLS PIPELINE II=1
-//                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
-//             }
-
-//             SHIFTED_STREAM_TO_FIRST_FFT_QUAD3:
-//             // then, half a row from quad 3
-//             for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
-//                 #pragma HLS PIPELINE II=1
-//                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
-//             }
-//         }
-
-//     SHIFTED_STREAM_TO_FIRST_FFT_LOWER_HALF:
-//         for (int i= 0; i<(MAT_SIZE/2)/VECTOR_SIZE_ROW; i+= MAT_ROWS/VECTOR_SIZE_ROW){
-
-//             // half a row from quad 2
-//             SHIFTED_STREAM_TO_FIRST_FFT_QUAD2:
-//             for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
-//                 #pragma HLS PIPELINE II=1
-//                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
-//             }
-
-//             SHIFTED_STREAM_TO_FIRST_FFT_QUAD1:
-//             // then, half a row from quad 1
-//             for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
-//                 #pragma HLS PIPELINE II=1
-//                 shifted_matrix_to_first_fft_strm << input_mat_vec[i+j];
-//             }
-//         }
-// }
 
 
-void stream_from_fft_row_to_fft_col(cmpx_data_t *temp_mat,  hls::stream<vector_row_data_t> &matrix_from_row_strm,  hls::stream<vector_col_data_t> &matrix_to_col_strm)
+
+void stream_from_fft_row_to_fft_col(cmpx_data_t *temp_mat,  hls::stream<burst_vector_data_t> &matrix_from_row_strm,  hls::stream<vector_col_data_t> &matrix_to_col_strm)
 {
-    vector_row_data_t* temp_mat_vec_row = (vector_row_data_t*) temp_mat;
+    burst_vector_data_t* temp_mat_vec_row = (burst_vector_data_t*) temp_mat;
     STRAM_FROM_FFT_ROW:
-    for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){
+    for (int i=0; i<MAT_SIZE/BURST_TRANSFER_VEC_SIZE; i++){
         #pragma HLS PIPELINE II=1
         temp_mat_vec_row[i] = matrix_from_row_strm.read();
     }
@@ -131,7 +144,9 @@ void stream_from_fft_row_to_fft_col(cmpx_data_t *temp_mat,  hls::stream<vector_r
 }
 
 
-void stream_from_fft_col_to_fft_row(cmpx_data_t *temp_mat,  hls::stream<vector_col_data_t> &matrix_from_col_strm,  hls::stream<vector_row_data_t> &matrix_to_row_strm)
+
+
+void stream_from_fft_col_to_fft_row(cmpx_data_t *temp_mat,  hls::stream<vector_col_data_t> &matrix_from_col_strm,  hls::stream<burst_vector_data_t> &matrix_to_row_strm)
 {
     vector_col_data_t* temp_mat_vec_col = (vector_col_data_t*) temp_mat;
 
@@ -143,59 +158,63 @@ void stream_from_fft_col_to_fft_row(cmpx_data_t *temp_mat,  hls::stream<vector_c
         }
     }
 
-    vector_row_data_t* temp_mat_row_col = (vector_row_data_t*) temp_mat;
+    burst_vector_data_t* temp_mat_row_col = (burst_vector_data_t*) temp_mat;
 
     STRAM_TO_FFT_ROW:
-    for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){               // (MAT_ROWS/ VECTOR_SIZE_ROW) * MAT_COLS
+    for (int i=0; i<MAT_SIZE/BURST_TRANSFER_VEC_SIZE; i++){               // (MAT_ROWS/ BURST_TRANSFER_VEC_SIZE) * MAT_COLS
         #pragma HLS PIPELINE
         matrix_to_row_strm << temp_mat_row_col[i];
     }
 }
 
 
-// void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream<vector_row_data_t> &second_output_matrix_row_major_strm)
-// {
-//     vector_row_data_t* output_mat_vec = (vector_row_data_t*) output_mat;
-
-//     SHIFTED_STREAM_BACK_FROM_SECOND_FFT_LOWER_HALF:
-//     for (int i= (MAT_SIZE/2)/VECTOR_SIZE_ROW; i<MAT_SIZE/VECTOR_SIZE_ROW; i+= MAT_ROWS/VECTOR_SIZE_ROW){
-
-//         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD4:
-//         for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
-//             #pragma HLS PIPELINE II=1
-//             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
-//         }
-
-//         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD3:
-//         for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
-//             #pragma HLS PIPELINE II=1
-//             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
-//         }
-//     }
-
-//     SHIFTED_STREAM_BACK_FROM_SECOND_FFT_UPPER_HALF:
-//     for (int i= 0; i<(MAT_SIZE/2)/VECTOR_SIZE_ROW; i+= MAT_ROWS/VECTOR_SIZE_ROW){
-
-//         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD2:
-//         for (int j=(MAT_ROWS/2)/VECTOR_SIZE_ROW; j<MAT_ROWS/VECTOR_SIZE_ROW; j++){
-//             #pragma HLS PIPELINE II=1
-//             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
-//         }
-
-//         RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD1:
-//         for (int j=0; j<(MAT_ROWS/2)/VECTOR_SIZE_ROW; j++){
-//             #pragma HLS PIPELINE II=1
-//             output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
-//         }
-//     }
-// }
 
 
-void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream<vector_row_data_t> &second_output_matrix_row_major_strm)
+void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream<burst_vector_data_t> &second_output_matrix_row_major_strm)
 {
-    vector_row_data_t* output_mat_vec = (vector_row_data_t*) output_mat;
+    burst_vector_data_t* output_mat_vec = (burst_vector_data_t*) output_mat;
 
-    int start_index = ((MAT_SIZE/2)/VECTOR_SIZE_ROW) + (MAT_ROWS/2)/VECTOR_SIZE_ROW;
+    SHIFTED_STREAM_BACK_FROM_SECOND_FFT_LOWER_HALF:
+    for (int i= (MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE; i<MAT_SIZE/BURST_TRANSFER_VEC_SIZE; i+= MAT_ROWS/BURST_TRANSFER_VEC_SIZE){
+
+        RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD4:
+        for (int j=(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j<MAT_ROWS/BURST_TRANSFER_VEC_SIZE; j++){
+            #pragma HLS PIPELINE II=1
+            output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
+        }
+
+        RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD3:
+        for (int j=0; j<(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j++){
+            #pragma HLS PIPELINE II=1
+            output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
+        }
+    }
+
+    SHIFTED_STREAM_BACK_FROM_SECOND_FFT_UPPER_HALF:
+    for (int i= 0; i<(MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE; i+= MAT_ROWS/BURST_TRANSFER_VEC_SIZE){
+
+        RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD2:
+        for (int j=(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j<MAT_ROWS/BURST_TRANSFER_VEC_SIZE; j++){
+            #pragma HLS PIPELINE II=1
+            output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
+        }
+
+        RESOLVE_SHIFTED_STREAM_FROM_SECOND_FFT_QUAD1:
+        for (int j=0; j<(MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE; j++){
+            #pragma HLS PIPELINE II=1
+            output_mat_vec[i+j] = second_output_matrix_row_major_strm.read();
+        }
+    }
+}
+
+
+
+
+void shifted_resolve_stream_from_second_fft_optimized(cmpx_data_t *output_mat, hls::stream<burst_vector_data_t> &second_output_matrix_row_major_strm)
+{
+    burst_vector_data_t* output_mat_vec = (burst_vector_data_t*) output_mat;
+
+    int start_index = ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE) + (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE;
     int index = start_index;
     bool flag_add = false;
     int run_step = 0;
@@ -204,27 +223,27 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
     SHIFTED_STREAM_BACK_FROM_SECOND_FFT_LOWER_HALF:
     for (int runs_so_far = 0; runs_so_far<MAT_ROWS; runs_so_far+=run_step){
         #pragma HLS pipeline
-        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/VECTOR_SIZE_ROW)  max = ((MAT_SIZE/2)/VECTOR_SIZE_ROW)
+        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE)  max = ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE)
         
         output_mat_vec[index] = second_output_matrix_row_major_strm.read();
 
         index++;
         count++;
         run_step = 0;
-        if (count == (MAT_ROWS/2)/VECTOR_SIZE_ROW){
+        if (count == (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE){
             run_step = 1;
             count = 0;
             if (flag_add){
-                index += MAT_ROWS/VECTOR_SIZE_ROW;
+                index += MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             else {
-                index -= MAT_ROWS/VECTOR_SIZE_ROW;
+                index -= MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             flag_add = !flag_add;
         }
     }
 
-    start_index = (MAT_ROWS/2)/VECTOR_SIZE_ROW;
+    start_index = (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE;
     index = start_index;
     flag_add = false;
     run_step = 0;
@@ -233,21 +252,21 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
     SHIFTED_STREAM_TO_FIRST_FFT_LOWER_HALF:
     for (int runs_so_far = 0; runs_so_far<MAT_ROWS; runs_so_far+=run_step){
         #pragma HLS pipeline
-        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/VECTOR_SIZE_ROW) max = ((MAT_SIZE/2)/VECTOR_SIZE_ROW)
+        #pragma HLS loop_tripcount  min=((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE) max = ((MAT_SIZE/2)/BURST_TRANSFER_VEC_SIZE)
 
         output_mat_vec[index] = second_output_matrix_row_major_strm.read();
 
         index++;
         count++;
         run_step = 0;
-        if (count == (MAT_ROWS/2)/VECTOR_SIZE_ROW){
+        if (count == (MAT_ROWS/2)/BURST_TRANSFER_VEC_SIZE){
             run_step = 1;
             count = 0;
             if (flag_add){
-                index += MAT_ROWS/VECTOR_SIZE_ROW;
+                index += MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             else {
-                index -= MAT_ROWS/VECTOR_SIZE_ROW;
+                index -= MAT_ROWS/BURST_TRANSFER_VEC_SIZE;
             }
             flag_add = !flag_add;
         }
@@ -256,14 +275,114 @@ void shifted_resolve_stream_from_second_fft(cmpx_data_t *output_mat, hls::stream
 
 
 
+
+void stream_from_fft_row(cmpx_data_t *output_mat, hls::stream<burst_vector_data_t> &first_output_matrix_row_major_strm)
+{
+    burst_vector_data_t* temp_mat_vec_row = (burst_vector_data_t*) output_mat;
+    STRAM_FROM_FFT_ROW:
+    for (int i=0; i<MAT_SIZE/BURST_TRANSFER_VEC_SIZE; i++){
+        #pragma HLS PIPELINE II=16
+        temp_mat_vec_row[i] = first_output_matrix_row_major_strm.read();
+    }
+}
+
+
+
+
+void stream_to_fft_col(cmpx_data_t *output_mat, hls::stream<vector_col_data_t> &first_input_matrix_col_major_strm)
+{
+    vector_col_data_t* temp_mat_vec_col = (vector_col_data_t*) output_mat;
+    STRAM_TO_FFT_COL:
+    for (int j=0; j<MAT_COLS/VECTOR_SIZE_COL; j++){
+        for (int i=0; i<MAT_ROWS; i++){
+            #pragma HLS PIPELINE II=1
+            first_input_matrix_col_major_strm << temp_mat_vec_col[i*(MAT_COLS/VECTOR_SIZE_COL) + j];   // stream the matrix in col major
+        }
+    }
+    // Alternativly: SAME PERFORMANCE
+    // int start_index = 0;
+    // int index = start_index;
+    // int run_step = 0;
+    // int count = 0;
+    // STRAM_TO_FFT_COL:
+    // for (int runs_so_far = 0; runs_so_far<MAT_COLS/VECTOR_SIZE_COL; runs_so_far+=run_step){
+    //     #pragma HLS PIPELINE
+    //     #pragma HLS loop_tripcount  min=(MAT_SIZE/VECTOR_SIZE_COL) max = (MAT_SIZE/VECTOR_SIZE_COL)
+    //     first_input_matrix_col_major_strm << temp_mat_vec_col[index];
+    //     index+= (MAT_ROWS/VECTOR_SIZE_COL);
+    //     count++;
+    //     run_step = 0;
+    //     if (count == MAT_ROWS){
+    //         run_step = 1;
+    //         count = 0;
+    //         index -= ((MAT_SIZE/BURST_TRANSFER_VEC_SIZE) -1);
+    //     }
+    // }
+}
+
+
+
+
+void stream_from_fft_col(cmpx_data_t *input_mat, hls::stream<vector_col_data_t> &second_output_matrix_col_major_strm)
+{
+    vector_col_data_t* temp_mat_vec_col2 = (vector_col_data_t*) input_mat;
+
+    STRAM_FROM_FFT_COL:
+    for (int j=0; j<MAT_COLS/VECTOR_SIZE_COL; j++){
+        for (int i=0; i<MAT_ROWS; i++){
+            #pragma HLS PIPELINE II=1
+            temp_mat_vec_col2[i*(MAT_COLS/VECTOR_SIZE_COL) + j] = second_output_matrix_col_major_strm.read();
+        }
+    }
+
+    // Alternativly: SAME PERFORMANCE
+    // start_index = 0;
+    // index = start_index;
+    // run_step = 0;
+    // count = 0;
+
+    // STRAM_FROM_FFT_COL:
+    // for (int runs_so_far = 0; runs_so_far<MAT_COLS/VECTOR_SIZE_COL; runs_so_far+=run_step){
+    //     #pragma HLS PIPELINE
+    //     #pragma HLS loop_tripcount  min=(MAT_SIZE/VECTOR_SIZE_COL) max = (MAT_SIZE/VECTOR_SIZE_COL)
+    //     temp_mat_vec_col2[index] = second_output_matrix_col_major_strm.read();
+    //     index+= (MAT_ROWS/VECTOR_SIZE_COL);
+    //     count++;
+    //     run_step = 0;
+    //     if (count == MAT_ROWS){
+    //         run_step = 1;
+    //         count = 0;
+    //         index -= ((MAT_SIZE/BURST_TRANSFER_VEC_SIZE) -1);
+    //     }
+    // }
+}
+
+
+
+
+void stream_to_fft_row(cmpx_data_t *input_mat, hls::stream<burst_vector_data_t> &second_input_matrix_row_major_strm)
+{
+    burst_vector_data_t* temp_mat_row_col = (burst_vector_data_t*) input_mat;
+    STRAM_TO_FFT_ROW:
+    for (int i=0; i<MAT_SIZE/BURST_TRANSFER_VEC_SIZE; i++){               // (MAT_ROWS/ BURST_TRANSFER_VEC_SIZE) * MAT_COLS
+        #pragma HLS PIPELINE II=16
+        second_input_matrix_row_major_strm << temp_mat_row_col[i];
+    }
+}
+
+
+//////////////       Propagation        //////////////
+//////////////////////////////////////////////////////
+
 /**
- * @note The implementation takes the mod of the exponential argumnet by 2 pi. Because high accuracy 
- * needed the order of magnitude of the integer part is high.
+ * @note  The implementation takes the mod of the exponential argumnet by 2 pi. Because high accuracy 
+ *        needed the order of magnitude of the integer part is high.
  */
-cmpx_data_t compute_tf_phase_element(data_t scale, data_t kxy_i, data_t kxy_j, data_t k_2, data_t distance){
+cmpx_data_t compute_tf_phase_element(data_t kx, data_t ky, data_t k_2, data_t distance)
+{
     #pragma HLS INLINE off
-    #pragma HLS FUNCTION_INSTANTIATE variable=scale, k_2, distance 
-    // #pragma HLS DATAFLOW
+    #pragma HLS FUNCTION_INSTANTIATE variable=k_2, distance 
+
     data_t kxy_sum;
     data_t kz2;
     data_t kz;
@@ -280,9 +399,7 @@ cmpx_data_t compute_tf_phase_element(data_t scale, data_t kxy_i, data_t kxy_j, d
     #pragma HLS BIND_OP  variable=kzd 			    op=fmul 	impl=fulldsp  
     #pragma HLS BIND_OP  variable=phase_element 	op=fmul 	impl=fulldsp  
 
-    const data_t M_2PI = (M_PI * 2);
-
-    kxy_sum = kxy_i * kxy_i + kxy_j * kxy_j;
+    kxy_sum = kx * kx + ky * ky;
     kz2 = k_2 - kxy_sum;
     kz = hls::sqrt(kz2);
     kzd = kz * distance;
@@ -291,19 +408,20 @@ cmpx_data_t compute_tf_phase_element(data_t scale, data_t kxy_i, data_t kxy_j, d
     sin_kzd = hls::sin(kzd_mod_2PI);
     cos_kzd = hls::cos(kzd_mod_2PI);
     hls::complex<data_t> e_kzd(cos_kzd, sin_kzd);
-    phase_element = scale * e_kzd;
+    phase_element = ((data_t) SCALE) * e_kzd;
     return phase_element;
 }
 
+
+
+
 void propagate_wave(
-    data_t scale,
     data_t distance,
     data_t k_2,
     data_t *kxy,
     hls::stream<vector_col_data_t> &first_output_matrix_col_major_strm,
     hls::stream<vector_col_data_t> &second_input_matrix_col_major_strm)
 {
-    // TODO: LITTLE'S LAW; PIPLINING?
     hls::vector<data_t, VECTOR_SIZE_COL> *kxy_col_vectors = (hls::vector<data_t, VECTOR_SIZE_COL> *) kxy;
 
     int col_tile_index1 = MAT_COLS/(2*VECTOR_SIZE_COL);
@@ -319,7 +437,7 @@ void propagate_wave(
 
             for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
                 #pragma HLS UNROLL
-                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
+                coeff_vec[ee] = compute_tf_phase_element(kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -333,7 +451,7 @@ void propagate_wave(
 
             for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
                 #pragma HLS UNROLL
-                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
+                coeff_vec[ee] = compute_tf_phase_element(kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -354,7 +472,7 @@ void propagate_wave(
 
             for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
                 #pragma HLS UNROLL
-                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
+                coeff_vec[ee] = compute_tf_phase_element(kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -369,7 +487,7 @@ void propagate_wave(
 
             for (int ee=0; ee<VECTOR_SIZE_COL; ee++){
                 #pragma HLS UNROLL
-                coeff_vec[ee] = compute_tf_phase_element( scale, kxy_i, kxy_j_vec[ee], k_2, distance);
+                coeff_vec[ee] = compute_tf_phase_element(kxy_i, kxy_j_vec[ee], k_2, distance);
             }
             second_input_matrix_col_major_strm << coeff_vec * first_output_matrix_col_major_strm.read();
         }
@@ -378,103 +496,29 @@ void propagate_wave(
 }
 
 
-void stream_from_fft_row(cmpx_data_t *output_mat, hls::stream<vector_row_data_t> &first_output_matrix_row_major_strm)
-{
-    vector_row_data_t* temp_mat_vec_row = (vector_row_data_t*) output_mat;
-    STRAM_FROM_FFT_ROW:
-    for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){
-        #pragma HLS PIPELINE II=16
-        temp_mat_vec_row[i] = first_output_matrix_row_major_strm.read();
-    }
-}
+
+//////////////       AngularSpec        //////////////
+//////////////////////////////////////////////////////
 
 void f1(bool direction, cmpx_data_t *input_mat, cmpx_data_t *output_mat)
 {
-    hls::stream<vector_row_data_t> first_input_matrix_row_major_strm;
-    hls::stream<vector_row_data_t> first_output_matrix_row_major_strm;
+    hls::stream<burst_vector_data_t> first_input_matrix_row_major_strm;
+    hls::stream<burst_vector_data_t> first_output_matrix_row_major_strm;
     #pragma HLS STREAM  variable=first_input_matrix_row_major_strm    type=fifo
     #pragma HLS STREAM  variable=first_output_matrix_row_major_strm   type=fifo
     #pragma HLS DATAFLOW
-    shifted_stream_to_first_fft(input_mat, first_input_matrix_row_major_strm);
+    shifted_stream_to_first_fft_optimized(input_mat, first_input_matrix_row_major_strm);
     fft_row_top(direction, first_input_matrix_row_major_strm, first_output_matrix_row_major_strm);
     stream_from_fft_row(output_mat, first_output_matrix_row_major_strm);
 }
 
 
-void stream_to_fft_col(cmpx_data_t *output_mat, hls::stream<vector_col_data_t> &first_input_matrix_col_major_strm)
-{
-    vector_col_data_t* temp_mat_vec_col = (vector_col_data_t*) output_mat;
-    STRAM_TO_FFT_COL:
-    for (int j=0; j<MAT_COLS/VECTOR_SIZE_COL; j++){
-        for (int i=0; i<MAT_ROWS; i++){
-            #pragma HLS PIPELINE II=1
-            first_input_matrix_col_major_strm << temp_mat_vec_col[i*(MAT_COLS/VECTOR_SIZE_COL) + j];   // stream the matrix in col major
-        }
-    }
-    // int start_index = 0;
-    // int index = start_index;
-    // int run_step = 0;
-    // int count = 0;
-    // STRAM_TO_FFT_COL:
-    // for (int runs_so_far = 0; runs_so_far<MAT_COLS/VECTOR_SIZE_COL; runs_so_far+=run_step){
-    //     #pragma HLS PIPELINE
-    //     #pragma HLS loop_tripcount  min=(MAT_SIZE/VECTOR_SIZE_COL) max = (MAT_SIZE/VECTOR_SIZE_COL)
-    //     first_input_matrix_col_major_strm << temp_mat_vec_col[index];
-    //     index+= (MAT_ROWS/VECTOR_SIZE_COL);
-    //     count++;
-    //     run_step = 0;
-    //     if (count == MAT_ROWS){
-    //         run_step = 1;
-    //         count = 0;
-    //         index -= ((MAT_SIZE/VECTOR_SIZE_ROW) -1);
-    //     }
-    // }
-}
 
 
-
-void stream_from_fft_col(cmpx_data_t *input_mat, hls::stream<vector_col_data_t> &second_output_matrix_col_major_strm)
-{
-    vector_col_data_t* temp_mat_vec_col2 = (vector_col_data_t*) input_mat;
-
-    STRAM_FROM_FFT_COL:
-    for (int j=0; j<MAT_COLS/VECTOR_SIZE_COL; j++){
-        for (int i=0; i<MAT_ROWS; i++){
-            #pragma HLS PIPELINE II=1
-            temp_mat_vec_col2[i*(MAT_COLS/VECTOR_SIZE_COL) + j] = second_output_matrix_col_major_strm.read();
-        }
-    }
-    // start_index = 0;
-    // index = start_index;
-    // run_step = 0;
-    // count = 0;
-
-    // STRAM_FROM_FFT_COL:
-    // for (int runs_so_far = 0; runs_so_far<MAT_COLS/VECTOR_SIZE_COL; runs_so_far+=run_step){
-    //     #pragma HLS PIPELINE
-    //     #pragma HLS loop_tripcount  min=(MAT_SIZE/VECTOR_SIZE_COL) max = (MAT_SIZE/VECTOR_SIZE_COL)
-    //     temp_mat_vec_col2[index] = second_output_matrix_col_major_strm.read();
-    //     index+= (MAT_ROWS/VECTOR_SIZE_COL);
-    //     count++;
-    //     run_step = 0;
-    //     if (count == MAT_ROWS){
-    //         run_step = 1;
-    //         count = 0;
-    //         index -= ((MAT_SIZE/VECTOR_SIZE_ROW) -1);
-    //     }
-    // }
-}
-
-void f2(
-        bool direction,
-        cmpx_data_t *input_mat,
-        cmpx_data_t *output_mat, 
-        data_t scale,
-        data_t distance,
-        data_t k_2,
-        data_t *kxy)
+void f2(bool direction, cmpx_data_t *input_mat, cmpx_data_t *output_mat,  data_t distance, data_t k_2, data_t *kxy)
 {
     bool inv_direction = !direction;
+
     hls::stream<vector_col_data_t> first_input_matrix_col_major_strm;
     hls::stream<vector_col_data_t> first_output_matrix_col_major_strm;
     hls::stream<vector_col_data_t> second_input_matrix_col_major_strm;
@@ -483,69 +527,56 @@ void f2(
     #pragma HLS STREAM  variable=first_output_matrix_col_major_strm   type=fifo
     #pragma HLS STREAM  variable=second_input_matrix_col_major_strm    type=fifo
     #pragma HLS STREAM  variable=second_output_matrix_col_major_strm   type=fifo
-    #pragma HLS DATAFLOW
 
+    #pragma HLS DATAFLOW
     stream_to_fft_col(output_mat, first_input_matrix_col_major_strm);
     fft_col_top(direction, first_input_matrix_col_major_strm, first_output_matrix_col_major_strm);
-    propagate_wave(scale, distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
+    propagate_wave(distance, k_2, kxy, first_output_matrix_col_major_strm, second_input_matrix_col_major_strm);
     fft_col_top(inv_direction, second_input_matrix_col_major_strm, second_output_matrix_col_major_strm);
     stream_from_fft_col(input_mat, second_output_matrix_col_major_strm);
 }
 
 
-void stream_to_fft_row(cmpx_data_t *input_mat, hls::stream<vector_row_data_t> &second_input_matrix_row_major_strm)
-{
-    vector_row_data_t* temp_mat_row_col = (vector_row_data_t*) input_mat;
-    STRAM_TO_FFT_ROW:
-    for (int i=0; i<MAT_SIZE/VECTOR_SIZE_ROW; i++){               // (MAT_ROWS/ VECTOR_SIZE_ROW) * MAT_COLS
-        #pragma HLS PIPELINE II=16
-        second_input_matrix_row_major_strm << temp_mat_row_col[i];
-    }
-}
+
 
 void f3(bool direction, cmpx_data_t *input_mat, cmpx_data_t *output_mat)
 {
     bool inv_direction = !direction;
-    hls::stream<vector_row_data_t> second_input_matrix_row_major_strm;
-    hls::stream<vector_row_data_t> second_output_matrix_row_major_strm;
-    
+
+    hls::stream<burst_vector_data_t> second_input_matrix_row_major_strm;
+    hls::stream<burst_vector_data_t> second_output_matrix_row_major_strm;
     #pragma HLS STREAM  variable=second_input_matrix_row_major_strm     type=fifo
     #pragma HLS STREAM  variable=second_output_matrix_row_major_strm    type=fifo
+
     #pragma HLS DATAFLOW
-    
     stream_to_fft_row(input_mat, second_input_matrix_row_major_strm);
     fft_row_top(inv_direction, second_input_matrix_row_major_strm, second_output_matrix_row_major_strm);
-    shifted_resolve_stream_from_second_fft(output_mat, second_output_matrix_row_major_strm);
+    shifted_resolve_stream_from_second_fft_optimized(output_mat, second_output_matrix_row_major_strm);
 }
 
 
-void angular_spectrum(
-    bool direction,
-    data_t scale,
-    data_t distance,
-    data_t k_2,
-    data_t *kxy,
-    cmpx_data_t *input_mat,
-    cmpx_data_t *output_mat
-    )
+void angular_spectrum( bool direction, data_t distance, data_t k_2, data_t delkx, cmpx_data_t *input_mat, cmpx_data_t *output_mat)
 {
     #pragma HLS INTERFACE s_axilite     port=direction
-    #pragma HLS INTERFACE s_axilite     port=scale
+    #pragma HLS INTERFACE s_axilite     port=delkx
     #pragma HLS INTERFACE s_axilite     port=distance
     #pragma HLS INTERFACE s_axilite     port=k_2
 
-    #pragma HLS INTERFACE m_axi         port=kxy              bundle=gmem2  depth = MAT_ROWS
     #pragma HLS INTERFACE m_axi         port=input_mat        bundle=gmem0  depth = MAT_SIZE
     #pragma HLS INTERFACE m_axi         port=output_mat       bundle=gmem1  depth = MAT_SIZE
 
-    data_t kxy_uram[MAT_ROWS]; //total size
-    #pragma HLS BIND_STORAGE variable=kxy_uram  type=RAM_2P   impl=uram
-    for (int i=0; i<MAT_ROWS; i++){ kxy_uram[i] = kxy[i]; }
-
     #pragma HLS allocation  function    instances=fft_row_top   limit=1
-    // Sequential, not DATAFLOW 
+
+    data_t kxy_uram[MAT_ROWS];
+    #pragma HLS BIND_STORAGE variable=kxy_uram  type=RAM_2P   impl=uram
+    for (int i=0; i<MAT_ROWS; i++){ 
+        #pragma PIPELINE
+        kxy_uram[i] = ((-(data_t)(MAT_ROWS / 2) + i) + 0.5) * delkx;
+    }
+
+    // Sequential, not DATAFLOW
     f1(direction,input_mat, output_mat);
-    f2(direction,input_mat, output_mat,  scale, distance, k_2, kxy_uram);
+    f2(direction,input_mat, output_mat, distance, k_2, kxy_uram);
     f3(direction,input_mat, output_mat);
 }
 
@@ -560,7 +591,7 @@ void angular_spectrum(
 ////////////////////////////////           FFT          /////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
-void fft_row_top(bool direction, hls::stream<vector_row_data_t> &matrix_to_row_strm, hls::stream<vector_row_data_t> &matrix_from_row_strm)
+void fft_row_top(bool direction, hls::stream<burst_vector_data_t> &matrix_to_row_strm, hls::stream<burst_vector_data_t> &matrix_from_row_strm)
 {
     cmpx_stream_t row_in1;
     cmpx_stream_t row_in2;
@@ -606,24 +637,24 @@ void fft_row_init(bool direction, hls::stream<configRow_t> &config_row)
 }
 
 
-void serialize_rows_in(hls::stream<vector_row_data_t> &matrix_to_row_strm, cmpx_stream_t &row_in1, cmpx_stream_t &row_in2){
+void serialize_rows_in(hls::stream<burst_vector_data_t> &matrix_to_row_strm, cmpx_stream_t &row_in1, cmpx_stream_t &row_in2){
 
     SERIALIZE_ROW_IN1:
-    for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
+    for (int i=0; i< MAT_COLS/BURST_TRANSFER_VEC_SIZE; i++){
         #pragma HLS PIPELINE II=9
 
-        vector_row_data_t row_segment1 = matrix_to_row_strm.read();
-        for (int j = 0; j < VECTOR_SIZE_ROW; j++){
+        burst_vector_data_t row_segment1 = matrix_to_row_strm.read();
+        for (int j = 0; j < BURST_TRANSFER_VEC_SIZE; j++){
             #pragma HLS UNROLL
             row_in1 << row_segment1[j];
         }
     }
 
     SERIALIZE_ROW_IN2:
-    for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
+    for (int i=0; i< MAT_COLS/BURST_TRANSFER_VEC_SIZE; i++){
         #pragma HLS PIPELINE II=9
-        vector_row_data_t row_segment2 = matrix_to_row_strm.read();
-        for (int j = 0; j < VECTOR_SIZE_ROW; j++){
+        burst_vector_data_t row_segment2 = matrix_to_row_strm.read();
+        for (int j = 0; j < BURST_TRANSFER_VEC_SIZE; j++){
             #pragma HLS UNROLL
             row_in2 << row_segment2[j];
         }
@@ -631,15 +662,15 @@ void serialize_rows_in(hls::stream<vector_row_data_t> &matrix_to_row_strm, cmpx_
     }
 }
 
-void serialize_rows_out(hls::stream<vector_row_data_t> &matrix_from_row_strm, cmpx_stream_t &row_out1, cmpx_stream_t &row_out2){
+void serialize_rows_out(hls::stream<burst_vector_data_t> &matrix_from_row_strm, cmpx_stream_t &row_out1, cmpx_stream_t &row_out2){
 
     SERIALIZE_ROW_OUT1:
-    for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
+    for (int i=0; i< MAT_COLS/BURST_TRANSFER_VEC_SIZE; i++){
 
         #pragma HLS PIPELINE II=9
     
-        vector_row_data_t row1_segment;
-        for (int j = 0; j < VECTOR_SIZE_ROW; j++){
+        burst_vector_data_t row1_segment;
+        for (int j = 0; j < BURST_TRANSFER_VEC_SIZE; j++){
             #pragma HLS UNROLL
             row1_segment[j] = row_out1.read();
         }
@@ -648,12 +679,12 @@ void serialize_rows_out(hls::stream<vector_row_data_t> &matrix_from_row_strm, cm
 
 
     SERIALIZE_ROW_OUT2:
-    for (int i=0; i< MAT_COLS/VECTOR_SIZE_ROW; i++){
+    for (int i=0; i< MAT_COLS/BURST_TRANSFER_VEC_SIZE; i++){
 
         #pragma HLS PIPELINE II=9
     
-        vector_row_data_t row2_segment;
-        for (int j = 0; j < VECTOR_SIZE_ROW; j++){
+        burst_vector_data_t row2_segment;
+        for (int j = 0; j < BURST_TRANSFER_VEC_SIZE; j++){
             #pragma HLS UNROLL
             row2_segment[j] = row_out2.read();
         }
@@ -758,13 +789,8 @@ void distibute_cols_out(hls::stream<vector_col_data_t> &matrix_from_col_strm, cm
 }
 
 
-
-
-
- 
-/////// Old Design  //////////
-
-// void angular_spectrum(
+// old design expected to be a bit faster but needs 3 more memory buffers 
+// void angular_spectrum_old_design(
 //     bool direction,
 //     data_t scale,
 //     data_t distance,
@@ -788,15 +814,15 @@ void distibute_cols_out(hls::stream<vector_col_data_t> &matrix_from_col_strm, cm
 //     #pragma HLS INTERFACE m_axi         port=temp_mat_1       bundle=gmem1  depth = MAT_SIZE
 //     #pragma HLS INTERFACE m_axi         port=temp_mat_2       bundle=gmem2  depth = MAT_SIZE
 
-//     hls::stream<vector_row_data_t> first_input_matrix_row_major_strm;
-//     hls::stream<vector_row_data_t> first_output_matrix_row_major_strm;
+//     hls::stream<burst_vector_data_t> first_input_matrix_row_major_strm;
+//     hls::stream<burst_vector_data_t> first_output_matrix_row_major_strm;
 //     hls::stream<vector_col_data_t> first_input_matrix_col_major_strm;
 //     hls::stream<vector_col_data_t> first_output_matrix_col_major_strm;
 
 //     hls::stream<vector_col_data_t> second_input_matrix_col_major_strm;
 //     hls::stream<vector_col_data_t> second_output_matrix_col_major_strm;
-//     hls::stream<vector_row_data_t> second_input_matrix_row_major_strm;
-//     hls::stream<vector_row_data_t> second_output_matrix_row_major_strm;
+//     hls::stream<burst_vector_data_t> second_input_matrix_row_major_strm;
+//     hls::stream<burst_vector_data_t> second_output_matrix_row_major_strm;
 
 //     #pragma HLS DATAFLOW
 
