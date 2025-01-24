@@ -1,0 +1,408 @@
+===============================================================================
+Version:    v++ v2023.2 (64-bit)
+Build:      SW Build 4026344 on 2023-10-11-15:42:10
+Copyright:  Copyright 1986-2023 Xilinx, Inc. All Rights Reserved.
+Created:    Fri Jan 24 17:04:27 2025
+===============================================================================
+
+-------------------------------------------------------------------------------
+Design Name:             binary_container_1
+Target Device:           xilinx.com:xd:xilinx_zcu104_base_202320_1:202320.1
+Target Clock:            150.000000MHz
+Total number of kernels: 1
+-------------------------------------------------------------------------------
+
+Kernel Summary
+Kernel Name       Type  Target              OpenCL Library      Compute Units
+----------------  ----  ------------------  ------------------  -------------
+angular_spectrum  c     fpga0:OCL_REGION_0  binary_container_1  1
+
+
+-------------------------------------------------------------------------------
+OpenCL Binary:     binary_container_1
+Kernels mapped to: clc_region
+
+Timing Information (MHz)
+Compute Unit        Kernel Name       Module Name                                                                       Target Frequency  Estimated Frequency
+------------------  ----------------  --------------------------------------------------------------------------------  ----------------  -------------------
+angular_spectrum_1  angular_spectrum  entry_proc462                                                                     100               544.069641
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRST_FFT_UPPER  100               136.986298
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRST_FFT_LOWER  100               136.986298
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized                                             100               136.986298
+angular_spectrum_1  angular_spectrum  entry_proc483                                                                     100               272.034821
+angular_spectrum_1  angular_spectrum  entry_proc142                                                                     100               544.069641
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31_Pipeline_SERIALIZE_ROW_IN1                                   100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31_Pipeline_SERIALIZE_ROW_IN2                                   100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31                                                              100               278.706787
+angular_spectrum_1  angular_spectrum  fft_row_init_29                                                                   100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_s                                    100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_35                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_unit_32_Block_entry14_proc8                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_row_unit_32                                                                   100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_init                                                                      100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_37                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_36                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_unit_33_Block_entry14_proc9                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_row_unit_33                                                                   100               136.986298
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34_Pipeline_SERIALIZE_ROW_OUT1                                 100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34_Pipeline_SERIALIZE_ROW_OUT2                                 100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34                                                             100               278.706787
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_ROWS                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_top_30                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_top_30_wrapper                                                            100               136.986298
+angular_spectrum_1  angular_spectrum  stream_from_fft_row_Pipeline_STRAM_FROM_FFT_ROW                                   100               136.986298
+angular_spectrum_1  angular_spectrum  stream_from_fft_row                                                               100               136.986298
+angular_spectrum_1  angular_spectrum  f1                                                                                100               136.986298
+angular_spectrum_1  angular_spectrum  entry_proc415                                                                     100               530.503967
+angular_spectrum_1  angular_spectrum  f2_Block_entry1_proc                                                              100               3484.32056
+angular_spectrum_1  angular_spectrum  stream_to_fft_col                                                                 100               136.986298
+angular_spectrum_1  angular_spectrum  entry_proc436                                                                     100               272.034821
+angular_spectrum_1  angular_spectrum  entry_proc294                                                                     100               544.069641
+angular_spectrum_1  angular_spectrum  distibute_cols_in_2                                                               100               326.477325
+angular_spectrum_1  angular_spectrum  fft_col_init_11                                                                   100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_s                                    100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_12                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_3_Block_entry14_proc10                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_3                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_init_13                                                                   100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_38                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_14                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_4_Block_entry14_proc11                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_4                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_init_15                                                                   100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_39                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_16                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_5_Block_entry14_proc12                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_5                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_init_17                                                                   100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_40                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_18                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_6_Block_entry14_proc13                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_6                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  distibute_cols_out_7                                                              100               278.706787
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_COLS                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_top_1                                                                     100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_top_1_wrapper                                                             100               136.986298
+angular_spectrum_1  angular_spectrum  mod_rcp_mult_24_36_8_s                                                            100               152.044998
+angular_spectrum_1  angular_spectrum  generic_fmod_mult_float_s                                                         100               151.584045
+angular_spectrum_1  angular_spectrum  sin_or_cos_float_s                                                                100               147.77597
+angular_spectrum_1  angular_spectrum  compute_tf_phase_element                                                          100               142.531357
+angular_spectrum_1  angular_spectrum  operator_mul_assign_float                                                         100               142.531357
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_UPPERLEFT_BUT_QUAD4                                       100               142.531357
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_LOWERLEFT_BUT_QUAD2                                       100               142.531357
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_UPPERRIGHT_BUT_QUAD3                                      100               142.531357
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_lowerRIGHT_BUT_QUAD1                                      100               142.531357
+angular_spectrum_1  angular_spectrum  propagate_wave                                                                    100               142.531357
+angular_spectrum_1  angular_spectrum  entry_proc193                                                                     100               544.069641
+angular_spectrum_1  angular_spectrum  distibute_cols_in                                                                 100               326.477325
+angular_spectrum_1  angular_spectrum  fft_col_init_1988                                                                 100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_41                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_20                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_8_Block_entry14_proc14                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_8                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_init_2189                                                                 100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_42                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_22                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_9_Block_entry14_proc15                                               100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_9                                                                    100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_init_2387                                                                 100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_43                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_24                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_10_Block_entry14_proc16                                              100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit_10                                                                   100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_init86                                                                    100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_44                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_s                                                       100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_unit_Block_entry14_proc17                                                 100               544.069641
+angular_spectrum_1  angular_spectrum  fft_col_unit                                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  distibute_cols_out                                                                100               278.706787
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_COLS_458                                                100               136.986298
+angular_spectrum_1  angular_spectrum  fft_col_top                                                                       100               136.986298
+angular_spectrum_1  angular_spectrum  stream_from_fft_col_Pipeline_STRAM_FROM_FFT_COL_VITIS_LOOP_332_1                  100               136.986298
+angular_spectrum_1  angular_spectrum  stream_from_fft_col                                                               100               136.986298
+angular_spectrum_1  angular_spectrum  f2                                                                                100               136.986298
+angular_spectrum_1  angular_spectrum  entry_proc395                                                                     100               544.069641
+angular_spectrum_1  angular_spectrum  f3_Block_entry1_proc                                                              100               3484.32056
+angular_spectrum_1  angular_spectrum  stream_to_fft_row_Pipeline_STRAM_TO_FFT_ROW                                       100               136.986298
+angular_spectrum_1  angular_spectrum  stream_to_fft_row                                                                 100               136.986298
+angular_spectrum_1  angular_spectrum  entry_proc                                                                        100               544.069641
+angular_spectrum_1  angular_spectrum  serialize_rows_in_Pipeline_SERIALIZE_ROW_IN1                                      100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_in_Pipeline_SERIALIZE_ROW_IN2                                      100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_in                                                                 100               278.706787
+angular_spectrum_1  angular_spectrum  fft_row_init_2690                                                                 100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_45                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_s                                                       100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_unit_Block_entry14_proc18                                                 100               544.069641
+angular_spectrum_1  angular_spectrum  fft_row_unit                                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_init_2791                                                                 100               272.034821
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_46                                   100               500
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_28                                                      100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_unit_25_Block_entry14_proc19                                              100               544.069641
+angular_spectrum_1  angular_spectrum  fft_row_unit_25                                                                   100               136.986298
+angular_spectrum_1  angular_spectrum  serialize_rows_out_Pipeline_SERIALIZE_ROW_OUT1                                    100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_out_Pipeline_SERIALIZE_ROW_OUT2                                    100               278.706787
+angular_spectrum_1  angular_spectrum  serialize_rows_out                                                                100               278.706787
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_ROWS_459                                                100               136.986298
+angular_spectrum_1  angular_spectrum  fft_row_top                                                                       100               136.986298
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized_Pipeline_SHIFTED_STREAM_BACK_FR  100               136.986298
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRS  100               136.986298
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized                                  100               136.986298
+angular_spectrum_1  angular_spectrum  f3                                                                                100               136.986298
+angular_spectrum_1  angular_spectrum  angular_spectrum                                                                  100               136.986298
+
+Latency Information
+Compute Unit        Kernel Name       Module Name                                                                       Start Interval  Best (cycles)  Avg (cycles)  Worst (cycles)  Best (absolute)  Avg (absolute)  Worst (absolute)
+------------------  ----------------  --------------------------------------------------------------------------------  --------------  -------------  ------------  --------------  ---------------  --------------  ----------------
+angular_spectrum_1  angular_spectrum  entry_proc462                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRST_FFT_UPPER  65610           65610          65610         65610           0.656 ms         0.656 ms        0.656 ms
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRST_FFT_LOWER  65610           65610          65610         65610           0.656 ms         0.656 ms        0.656 ms
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized                                             131225          131225         131225        131225          1.312 ms         1.312 ms        1.312 ms
+angular_spectrum_1  angular_spectrum  entry_proc483                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  entry_proc142                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31_Pipeline_SERIALIZE_ROW_IN1                                   1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31_Pipeline_SERIALIZE_ROW_IN2                                   1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31                                                              2312            2312           2312          2312            23.120 us        23.120 us       23.120 us
+angular_spectrum_1  angular_spectrum  fft_row_init_29                                                                   0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_s                                    3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_35                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_row_unit_32_Block_entry14_proc8                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_row_unit_32                                                                   3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_row_init                                                                      0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_37                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_36                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_row_unit_33_Block_entry14_proc9                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_row_unit_33                                                                   3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34_Pipeline_SERIALIZE_ROW_OUT1                                 1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34_Pipeline_SERIALIZE_ROW_OUT2                                 1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34                                                             2312            2312           2312          2312            23.120 us        23.120 us       23.120 us
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_ROWS                                                    3196            3201           3201          3201            32.010 us        32.010 us       32.010 us
+angular_spectrum_1  angular_spectrum  fft_row_top_30                                                                    1636359         1636359        1636359       1636359         16.364 ms        16.364 ms       16.364 ms
+angular_spectrum_1  angular_spectrum  fft_row_top_30_wrapper                                                            1636360         1636360        1636360       1636360         16.364 ms        16.364 ms       16.364 ms
+angular_spectrum_1  angular_spectrum  stream_from_fft_row_Pipeline_STRAM_FROM_FFT_ROW                                   393218          393218         393218        393218          3.932 ms         3.932 ms        3.932 ms
+angular_spectrum_1  angular_spectrum  stream_from_fft_row                                                               393289          393289         393289        393289          3.933 ms         3.933 ms        3.933 ms
+angular_spectrum_1  angular_spectrum  f1                                                                                1636360         1636435        1636435       1636435         16.364 ms        16.364 ms       16.364 ms
+angular_spectrum_1  angular_spectrum  entry_proc415                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  f2_Block_entry1_proc                                                              0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  stream_to_fft_col                                                                 262218          262218         262218        262218          2.622 ms         2.622 ms        2.622 ms
+angular_spectrum_1  angular_spectrum  entry_proc436                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  entry_proc294                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  distibute_cols_in_2                                                               1026            1026           1026          1026            10.260 us        10.260 us       10.260 us
+angular_spectrum_1  angular_spectrum  fft_col_init_11                                                                   0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_s                                    3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_12                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_3_Block_entry14_proc10                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_3                                                                    3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_col_init_13                                                                   0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_38                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_14                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_4_Block_entry14_proc11                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_4                                                                    3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_col_init_15                                                                   0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_39                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_16                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_5_Block_entry14_proc12                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_5                                                                    3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_col_init_17                                                                   0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_40                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_18                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_6_Block_entry14_proc13                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_6                                                                    3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  distibute_cols_out_7                                                              1026            1026           1026          1026            10.260 us        10.260 us       10.260 us
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_COLS                                                    3196            3198           3198          3198            31.980 us        31.980 us       31.980 us
+angular_spectrum_1  angular_spectrum  fft_col_top_1                                                                     818180          818180         818180        818180          8.182 ms         8.182 ms        8.182 ms
+angular_spectrum_1  angular_spectrum  fft_col_top_1_wrapper                                                             818181          818181         818181        818181          8.182 ms         8.182 ms        8.182 ms
+angular_spectrum_1  angular_spectrum  mod_rcp_mult_24_36_8_s                                                            1               15             15            15              0.150 us         0.150 us        0.150 us
+angular_spectrum_1  angular_spectrum  generic_fmod_mult_float_s                                                         1               17             17            17              0.170 us         0.170 us        0.170 us
+angular_spectrum_1  angular_spectrum  sin_or_cos_float_s                                                                1               5              5             5               50.000 ns        50.000 ns       50.000 ns
+angular_spectrum_1  angular_spectrum  compute_tf_phase_element                                                          1               48             48            48              0.480 us         0.480 us        0.480 us
+angular_spectrum_1  angular_spectrum  operator_mul_assign_float                                                         1               8              8             8               80.000 ns        80.000 ns       80.000 ns
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_UPPERLEFT_BUT_QUAD4                                       600             600            600           600             6.000 us         6.000 us        6.000 us
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_LOWERLEFT_BUT_QUAD2                                       600             600            600           600             6.000 us         6.000 us        6.000 us
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_UPPERRIGHT_BUT_QUAD3                                      600             600            600           600             6.000 us         6.000 us        6.000 us
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_lowerRIGHT_BUT_QUAD1                                      600             600            600           600             6.000 us         6.000 us        6.000 us
+angular_spectrum_1  angular_spectrum  propagate_wave                                                                    309250          309250         309250        309250          3.092 ms         3.092 ms        3.092 ms
+angular_spectrum_1  angular_spectrum  entry_proc193                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  distibute_cols_in                                                                 1026            1026           1026          1026            10.260 us        10.260 us       10.260 us
+angular_spectrum_1  angular_spectrum  fft_col_init_1988                                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_41                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_20                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_8_Block_entry14_proc14                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_8                                                                    3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_col_init_2189                                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_42                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_22                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_9_Block_entry14_proc15                                               0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_9                                                                    3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_col_init_2387                                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_43                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_24                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_10_Block_entry14_proc16                                              0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit_10                                                                   3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_col_init86                                                                    0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_44                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_s                                                       3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_col_unit_Block_entry14_proc17                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_col_unit                                                                      3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  distibute_cols_out                                                                1026            1026           1026          1026            10.260 us        10.260 us       10.260 us
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_COLS_458                                                3196            3198           3198          3198            31.980 us        31.980 us       31.980 us
+angular_spectrum_1  angular_spectrum  fft_col_top                                                                       818180          818180         818180        818180          8.182 ms         8.182 ms        8.182 ms
+angular_spectrum_1  angular_spectrum  stream_from_fft_col_Pipeline_STRAM_FROM_FFT_COL_VITIS_LOOP_332_1                  262215          262215         262215        262215          2.622 ms         2.622 ms        2.622 ms
+angular_spectrum_1  angular_spectrum  stream_from_fft_col                                                               262217          262217         262217        262217          2.622 ms         2.622 ms        2.622 ms
+angular_spectrum_1  angular_spectrum  f2                                                                                818181          818300         818300        818300          8.183 ms         8.183 ms        8.183 ms
+angular_spectrum_1  angular_spectrum  entry_proc395                                                                     0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  f3_Block_entry1_proc                                                              0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  stream_to_fft_row_Pipeline_STRAM_TO_FFT_ROW                                       393218          393218         393218        393218          3.932 ms         3.932 ms        3.932 ms
+angular_spectrum_1  angular_spectrum  stream_to_fft_row                                                                 393290          393290         393290        393290          3.933 ms         3.933 ms        3.933 ms
+angular_spectrum_1  angular_spectrum  entry_proc                                                                        0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  serialize_rows_in_Pipeline_SERIALIZE_ROW_IN1                                      1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_in_Pipeline_SERIALIZE_ROW_IN2                                      1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_in                                                                 2312            2312           2312          2312            23.120 us        23.120 us       23.120 us
+angular_spectrum_1  angular_spectrum  fft_row_init_2690                                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_45                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_s                                                       3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_row_unit_Block_entry14_proc18                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_row_unit                                                                      3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  fft_row_init_2791                                                                 0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_46                                   3195            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_28                                                      3196            3195           3195          3195            31.950 us        31.950 us       31.950 us
+angular_spectrum_1  angular_spectrum  fft_row_unit_25_Block_entry14_proc19                                              0               0              0             0               0 ns             0 ns            0 ns
+angular_spectrum_1  angular_spectrum  fft_row_unit_25                                                                   3196            3196           3196          3196            31.960 us        31.960 us       31.960 us
+angular_spectrum_1  angular_spectrum  serialize_rows_out_Pipeline_SERIALIZE_ROW_OUT1                                    1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_out_Pipeline_SERIALIZE_ROW_OUT2                                    1154            1154           1154          1154            11.540 us        11.540 us       11.540 us
+angular_spectrum_1  angular_spectrum  serialize_rows_out                                                                2312            2312           2312          2312            23.120 us        23.120 us       23.120 us
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_ROWS_459                                                3196            3201           3201          3201            32.010 us        32.010 us       32.010 us
+angular_spectrum_1  angular_spectrum  fft_row_top                                                                       1636359         1636359        1636359       1636359         16.364 ms        16.364 ms       16.364 ms
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized_Pipeline_SHIFTED_STREAM_BACK_FR  65607           65607          65607         65607           0.656 ms         0.656 ms        0.656 ms
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRS  65607           65607          65607         65607           0.656 ms         0.656 ms        0.656 ms
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized                                  131219          131219         131219        131219          1.312 ms         1.312 ms        1.312 ms
+angular_spectrum_1  angular_spectrum  f3                                                                                1636360         1636431        1636431       1636431         16.364 ms        16.364 ms       16.364 ms
+angular_spectrum_1  angular_spectrum  angular_spectrum                                                                  4092215         4092214        4092214       4092214         40.922 ms        40.922 ms       40.922 ms
+
+Area Information
+Compute Unit        Kernel Name       Module Name                                                                       FF      LUT     DSP  BRAM  URAM
+------------------  ----------------  --------------------------------------------------------------------------------  ------  ------  ---  ----  ----
+angular_spectrum_1  angular_spectrum  entry_proc462                                                                     3       38      0    0     0
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRST_FFT_UPPER  880     445     0    0     0
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRST_FFT_LOWER  880     445     0    0     0
+angular_spectrum_1  angular_spectrum  shifted_stream_to_first_fft_optimized                                             1769    1143    0    0     0
+angular_spectrum_1  angular_spectrum  entry_proc483                                                                     3       29      0    0     0
+angular_spectrum_1  angular_spectrum  entry_proc142                                                                     3       38      0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31_Pipeline_SERIALIZE_ROW_IN1                                   466     181     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31_Pipeline_SERIALIZE_ROW_IN2                                   466     181     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_in_31                                                              940     436     0    0     0
+angular_spectrum_1  angular_spectrum  fft_row_init_29                                                                   3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_s                                    16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_35                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_row_unit_32_Block_entry14_proc8                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_row_unit_32                                                                   16304   13005   0    11    0
+angular_spectrum_1  angular_spectrum  fft_row_init                                                                      3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_37                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_36                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_row_unit_33_Block_entry14_proc9                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_row_unit_33                                                                   16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34_Pipeline_SERIALIZE_ROW_OUT1                                 466     132     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34_Pipeline_SERIALIZE_ROW_OUT2                                 466     132     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_out_34                                                             940     347     0    0     0
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_ROWS                                                    35342   27236   0    38    0
+angular_spectrum_1  angular_spectrum  fft_row_top_30                                                                    35513   27291   0    38    0
+angular_spectrum_1  angular_spectrum  fft_row_top_30_wrapper                                                            35615   27389   0    38    0
+angular_spectrum_1  angular_spectrum  stream_from_fft_row_Pipeline_STRAM_FROM_FFT_ROW                                   534     116     0    0     0
+angular_spectrum_1  angular_spectrum  stream_from_fft_row                                                               666     686     0    0     0
+angular_spectrum_1  angular_spectrum  f1                                                                                38451   29556   0    38    0
+angular_spectrum_1  angular_spectrum  entry_proc415                                                                     3       38      0    0     0
+angular_spectrum_1  angular_spectrum  f2_Block_entry1_proc                                                              3       22      0    0     0
+angular_spectrum_1  angular_spectrum  stream_to_fft_col                                                                 976     2569    0    0     0
+angular_spectrum_1  angular_spectrum  entry_proc436                                                                     3       29      0    0     0
+angular_spectrum_1  angular_spectrum  entry_proc294                                                                     3       56      0    0     0
+angular_spectrum_1  angular_spectrum  distibute_cols_in_2                                                               270     128     0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_init_11                                                                   3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_s                                    16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_12                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_3_Block_entry14_proc10                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_3                                                                    16304   13005   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_init_13                                                                   3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_38                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_14                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_4_Block_entry14_proc11                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_4                                                                    16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_init_15                                                                   3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_39                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_16                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_5_Block_entry14_proc12                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_5                                                                    16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_init_17                                                                   3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_40                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_18                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_6_Block_entry14_proc13                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_6                                                                    16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  distibute_cols_out_7                                                              14      126     0    0     0
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_COLS                                                    67202   53099   0    76    0
+angular_spectrum_1  angular_spectrum  fft_col_top_1                                                                     67357   53151   0    76    0
+angular_spectrum_1  angular_spectrum  fft_col_top_1_wrapper                                                             67459   53249   0    76    0
+angular_spectrum_1  angular_spectrum  mod_rcp_mult_24_36_8_s                                                            818     6881    0    0     0
+angular_spectrum_1  angular_spectrum  generic_fmod_mult_float_s                                                         1863    7821    0    0     0
+angular_spectrum_1  angular_spectrum  sin_or_cos_float_s                                                                854     2407    0    0     0
+angular_spectrum_1  angular_spectrum  compute_tf_phase_element                                                          5164    13744   0    0     0
+angular_spectrum_1  angular_spectrum  operator_mul_assign_float                                                         2536    10246   0    0     0
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_UPPERLEFT_BUT_QUAD4                                       799     143     0    0     0
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_LOWERLEFT_BUT_QUAD2                                       798     141     0    0     0
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_UPPERRIGHT_BUT_QUAD3                                      799     143     0    0     0
+angular_spectrum_1  angular_spectrum  propagate_wave_Pipeline_lowerRIGHT_BUT_QUAD1                                      798     141     0    0     0
+angular_spectrum_1  angular_spectrum  propagate_wave                                                                    34432   98109   0    0     0
+angular_spectrum_1  angular_spectrum  entry_proc193                                                                     3       56      0    0     0
+angular_spectrum_1  angular_spectrum  distibute_cols_in                                                                 270     128     0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_init_1988                                                                 3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_41                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_20                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_8_Block_entry14_proc14                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_8                                                                    16304   13005   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_init_2189                                                                 3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_42                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_22                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_9_Block_entry14_proc15                                               2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_9                                                                    16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_init_2387                                                                 3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_43                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_24                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_10_Block_entry14_proc16                                              2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit_10                                                                   16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_init86                                                                    3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_col_32_32_1024_1_1_44                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_col_s                                                       16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_col_unit_Block_entry14_proc17                                                 2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_col_unit                                                                      16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  distibute_cols_out                                                                14      126     0    0     0
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_COLS_458                                                67202   53099   0    76    0
+angular_spectrum_1  angular_spectrum  fft_col_top                                                                       67357   53151   0    76    0
+angular_spectrum_1  angular_spectrum  stream_from_fft_col_Pipeline_STRAM_FROM_FFT_COL_VITIS_LOOP_332_1                  828     2664    0    0     0
+angular_spectrum_1  angular_spectrum  stream_from_fft_col                                                               903     2740    0    0     0
+angular_spectrum_1  angular_spectrum  f2                                                                                171830  210404  0    152   0
+angular_spectrum_1  angular_spectrum  entry_proc395                                                                     3       29      0    0     0
+angular_spectrum_1  angular_spectrum  f3_Block_entry1_proc                                                              3       22      0    0     0
+angular_spectrum_1  angular_spectrum  stream_to_fft_row_Pipeline_STRAM_TO_FFT_ROW                                       534     116     0    0     0
+angular_spectrum_1  angular_spectrum  stream_to_fft_row                                                                 667     666     0    0     0
+angular_spectrum_1  angular_spectrum  entry_proc                                                                        3       38      0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_in_Pipeline_SERIALIZE_ROW_IN1                                      466     181     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_in_Pipeline_SERIALIZE_ROW_IN2                                      466     181     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_in                                                                 940     436     0    0     0
+angular_spectrum_1  angular_spectrum  fft_row_init_2690                                                                 3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_45                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_s                                                       16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_row_unit_Block_entry14_proc18                                                 2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_row_unit                                                                      16304   13005   0    11    0
+angular_spectrum_1  angular_spectrum  fft_row_init_2791                                                                 3       38      0    0     0
+angular_spectrum_1  angular_spectrum  fft_syn_apra_2dfft_config_row_32_32_1024_1_1_46                                   16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_apra_2dfft_config_row_28                                                      16100   12802   0    11    0
+angular_spectrum_1  angular_spectrum  fft_row_unit_25_Block_entry14_proc19                                              2       20      0    0     0
+angular_spectrum_1  angular_spectrum  fft_row_unit_25                                                                   16303   12996   0    11    0
+angular_spectrum_1  angular_spectrum  serialize_rows_out_Pipeline_SERIALIZE_ROW_OUT1                                    466     132     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_out_Pipeline_SERIALIZE_ROW_OUT2                                    466     132     0    0     0
+angular_spectrum_1  angular_spectrum  serialize_rows_out                                                                940     347     0    0     0
+angular_spectrum_1  angular_spectrum  dataflow_in_loop_LOOP_FFT_ROWS_459                                                35342   27236   0    38    0
+angular_spectrum_1  angular_spectrum  fft_row_top                                                                       35513   27291   0    38    0
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized_Pipeline_SHIFTED_STREAM_BACK_FR  874     456     0    0     0
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized_Pipeline_SHIFTED_STREAM_TO_FIRS  874     456     0    0     0
+angular_spectrum_1  angular_spectrum  shifted_resolve_stream_from_second_fft_optimized                                  1821    1249    0    0     0
+angular_spectrum_1  angular_spectrum  f3                                                                                38406   29568   0    38    0
+angular_spectrum_1  angular_spectrum  angular_spectrum                                                                  253736  274839  0    344   1
+-------------------------------------------------------------------------------
