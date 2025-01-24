@@ -5,7 +5,7 @@
 
 
 ## Hardware Deployment Results
-![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/deployment_results.png)
+![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/validation/sig1.png)
 
 ~ 465 times faster than CPU
 
