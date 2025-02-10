@@ -24,21 +24,14 @@ void inner_loop_calc(
     stream_t& R_out,
     int i){
 
-    // row_t Q_temp;
-    // row_t R_temp;
 
-    // row_t Qi_ram;
-    // row_t Qj_ram;
-    // row_t Ri_ram; 
-    // row_t Rj_ram;
+    vector_t Q_temp[N_VECTOR];
+    vector_t R_temp[N_VECTOR];
 
-    data_t Q_temp[N];
-    data_t R_temp[N];
-
-    data_t Qi_ram[N];
-    data_t Qj_ram[N];
-    data_t Ri_ram[N];
-    data_t Rj_ram[N];
+    vector_t Qi_ram[N_VECTOR];
+    vector_t Qj_ram[N_VECTOR];
+    vector_t Ri_ram[N_VECTOR];
+    vector_t Rj_ram[N_VECTOR];
 
 
     // #pragma HLS bind_storage variable=R_temp type=ram_2p impl=uram
@@ -49,9 +42,9 @@ void inner_loop_calc(
 
 
 
-    LOAD_I_ROWS_FROM_STREAM:
-    for (int k=0; k<N; k++){
-        #pragma HLS LOOP_TRIPCOUNT max=N
+    LOAD_I_ROW_FROM_STREAM:
+    for (int k=0; k<N_VECTOR; k++){
+        #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
         Qi_ram[k] = Q_in.read();
         Ri_ram[k] = R_in.read();
     }
@@ -63,6 +56,7 @@ void inner_loop_calc(
     data_t sin_val;
 
     //Inter-loop dependence here is only the i vectors (stored in local ram)
+    //Can be pipelined, but cannot be parallelized due to this inter-loop dependency
     MAIN_INNER_LOOP:
     for (int j = i + 1; j < N; j++){ //j starts at 1 for the first i=0
 
@@ -71,15 +65,16 @@ void inner_loop_calc(
         //#pragma HLS PIPELINE II=150
 
         LOAD_J_ROWS_FROM_STREAM:
-        for (int k=0; k<N; k++){
-            #pragma HLS LOOP_TRIPCOUNT max=N
+        for (int k=0; k<N_VECTOR; k++){
+            #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
             Qj_ram[k] = Q_in.read();
             Rj_ram[k] = R_in.read();
         }
 
         // Compute Givens rotation
-        a=Ri_ram[i];
-        b=Rj_ram[i];
+        //These are rows from which we must extract a particular element
+        a=Ri_ram[i/VECTOR_SIZE][i%VECTOR_SIZE];
+        b=Rj_ram[i/VECTOR_SIZE][i%VECTOR_SIZE];
 
         hypot_val = hypotf(a,b);
         cos_val = a/hypot_val;
@@ -88,9 +83,8 @@ void inner_loop_calc(
         #pragma HLS DATAFLOW
 
 
-
         OPERATE_ON_ROW:
-        for(int k=0; k<N; k++){
+        for(int k=0; k<N_VECTOR; k++){ //SIMD here with vectors
             #pragma HLS LOOP_TRIPCOUNT max=N
             #pragma HLS UNROLL factor=8
             R_temp[k] = Ri_ram[k];
@@ -107,16 +101,16 @@ void inner_loop_calc(
         //Qj_ram = Q_temp * sin_val + Qj_ram * cos_val;
 
         STORE_J_ROWS_TO_STREAM:
-        for (int k=0; k<N; k++){
-            #pragma HLS LOOP_TRIPCOUNT max=N
+        for (int k=0; k<N_VECTOR; k++){
+            #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
             Q_out << Qj_ram[k];
             R_out << Rj_ram[k];
         }
     }
 
-    STORE_I_ROWS_TO_STREAM:
-    for (int k=0; k<N; k++){
-        #pragma HLS LOOP_TRIPCOUNT max=N
+    STORE_I_ROW_TO_STREAM:
+    for (int k=0; k<N_VECTOR; k++){
+        #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
         Q_out << Qi_ram[k];
         R_out << Ri_ram[k];
     }
@@ -126,51 +120,57 @@ void inner_loop_calc(
 /////////////////////////////////////////////////////////////////////////////////////
 
 
-void combined_stream_in(data_t* input_matrix, stream_t &in_stream, int row, int i){
+void combined_stream_in(vector_t* input_matrix, stream_t &in_stream, int row, int i){
     STREAM_ROW_IN:
-    for (int k = 0; k < N; k++){
+    for (int k = 0; k < N_VECTOR; k++){
         #pragma HLS PIPELINE II=1
-        #pragma HLS LOOP_TRIPCOUNT max=N
-        in_stream << input_matrix[row*N+k];
+        #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
+        in_stream << input_matrix[row*N_VECTOR+k];
     }
 
     STREAM_TRIANGLE_IN:
     for (int j = i + 1; j < N; j++){
         #pragma HLS LOOP_TRIPCOUNT min=1 avg=N/2 max=N-1
         INNER_STREAM_TRIANGLE_IN:
-        for (int k=0; k<N; k++){
-            #pragma HLS LOOP_TRIPCOUNT max=N
+        for (int k=0; k<N_VECTOR; k++){
+            #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
             #pragma HLS PIPELINE II=1
-            in_stream << input_matrix[j*N+k]; //Jth row, in row major order
+            in_stream << input_matrix[j*N_VECTOR+k]; //Jth row, in row major order
         }
     }
 }
 
-void combined_stream_out(stream_t &out_stream, data_t* output_matrix, int row, int i){
+void combined_stream_out(stream_t &out_stream, vector_t* output_matrix, int row, int i){
     STREAM_TRIANGLE_OUT:
     for (int j = i + 1; j < N; j++){
         #pragma HLS LOOP_TRIPCOUNT min=1 avg=N/2 max=N-1
         INNER_STREAM_TRIANGLE_OUT:
-        for (int k=0; k<N; k++){
-            #pragma HLS LOOP_TRIPCOUNT max=N
+        for (int k=0; k<N_VECTOR; k++){
+            #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
             #pragma HLS PIPELINE II=1
-            output_matrix[j*N+k] = out_stream.read();  //Jth row, in row major order
+            output_matrix[j*N_VECTOR+k] = out_stream.read();  //Jth row, in row major order
         }
     }
 
     STREAM_ROW_OUT:
-    for (int k = 0; k < N; k++){
+    for (int k = 0; k < N_VECTOR; k++){
         #pragma HLS PIPELINE II=1
-        #pragma HLS LOOP_TRIPCOUNT max=N
-        output_matrix[row*N+k] = out_stream.read();
+        #pragma HLS LOOP_TRIPCOUNT max=N_VECTOR
+        output_matrix[row*N_VECTOR+k] = out_stream.read();
     }
 }
 
 
 // QR DCMP Kernel
-void krnl_qr_dcmp(data_t *Q, data_t *R) {
-    #pragma HLS INTERFACE m_axi port=Q bundle=gmem0 depth=N*N
-    #pragma HLS INTERFACE m_axi port=R bundle=gmem1 depth=N*N
+void krnl_qr_dcmp(data_t *Q0, data_t *R0) {
+
+    vector_t* Q = (vector_t*) Q0;
+    vector_t* R = (vector_t*) R0;
+
+    #pragma HLS INTERFACE m_axi port=Q bundle=gmem0 depth=N*N_VECTOR
+    #pragma HLS INTERFACE m_axi port=R bundle=gmem1 depth=N*N_VECTOR
+
+    
 
     //Each bundle can only have one reader and one writer.
     //The i streaming is the row stream

@@ -12,20 +12,23 @@ using namespace std;
 
 
 #define N 128
+#define VECTOR_SIZE 16
+
+#define N_VECTOR N/VECTOR_SIZE
 
 
 #define MAT_SIZE (N * N)
 
 
-
 typedef float data_t;
 
-#define VECTOR_SIZE 8
+
 
 
 typedef hls::vector<data_t, VECTOR_SIZE> vector_t;
 
-typedef hls::stream<data_t> stream_t;
+//typedef hls::stream<data_t> stream_t;
+typedef hls::stream<vector_t> stream_t;
 
 typedef hls::vector<data_t, N> row_t;
 
