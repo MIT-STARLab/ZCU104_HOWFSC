@@ -24,8 +24,6 @@
 
 
 
-
-
 #define TIMER(label)  timespec label; syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &label)
 #define ELAPSED(b,a)  (double(b.tv_sec - a.tv_sec)*1000000000.0+double(b.tv_nsec-a.tv_nsec))/1000000000.0
 
@@ -86,7 +84,7 @@ bool approx_equal(float a, float b, float tolerance) {
 /**
  * Validate results for real float arrays.
  */
-void validate_results(float *expected_output, float *real_output, int data_size, float tolerance, bool save_to_files, bool print_errors) {
+void validate_results(float *expected_output, float *real_output, int data_size, float tolerance, bool save_to_files, bool print_errors, int n) {
     std::cout << STR_INFO << "Start Validation" << std::endl;
 
     bool passed = true;
@@ -120,8 +118,8 @@ void validate_results(float *expected_output, float *real_output, int data_size,
         std::ofstream hardware_output_file("hardware_output.txt");
         std::ofstream software_output_file("software_output.txt");
 
-        hardware_output_file << N << std::endl;
-        software_output_file << N << std::endl;
+        hardware_output_file << n << std::endl;
+        software_output_file << n << std::endl;
 
         for (int i = 0; i < data_size; i++) {
             hardware_output_file << real_output[i] << std::endl;
@@ -138,11 +136,15 @@ int main(int argc, char** argv) {
 
     // Check command line arguments
     if(argc < 2) {
-        std::cout << STR_USAGE << argv[0] <<" <binary_container.xclbin> <trials> <print_errors>" <<std::endl;
+        std::cout << STR_USAGE << argv[0] <<" <binary_container.xclbin> <trials> <print_errors> <n>" <<std::endl;
         return EXIT_FAILURE;
     }
     int rounds = (argc < 3)? 1: std::stoi(argv[2]);
     bool print_errors = (argc < 4)? 0: std::stoi(argv[3]);
+    int n = (argc < 5)? 128: std::stoi(argv[4]);
+
+    const int mat_size = n*n;
+
 
     ////////////////     Initialize XRT device and load xclbin    //////////////////////////
     ////////////////////////////////////////////////////////////////////////////////////////
@@ -174,12 +176,13 @@ int main(int argc, char** argv) {
     std::cout << STR_INFO << "Allocate Buffers in Global Memory" << std::endl;
 
     // Compute the size of arrays in bytes
-    size_t size_in_bytes = MAT_SIZE * sizeof(data_t);
-    std::cout << STR_INFO << "Matrix size in words  = " << MAT_SIZE  * 2   << std::endl;
+    size_t size_in_bytes = mat_size * sizeof(data_t);
+    std::cout << STR_INFO << "Matrix size in words  = " << mat_size  * 2   << std::endl;
     std::cout << STR_INFO << "Matrix size in bytes  = " << size_in_bytes   << std::endl;
 
-    auto bo_QT = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(0));             // kernel argument 0: input  matrix array
-    auto bo_R = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(1));            // kernel argument 1: output matrix array
+    auto bo_QT = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(0));        // kernel argument 0: input  matrix array
+    auto bo_R = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(1));         // kernel argument 1: output matrix array
+                                                                                                // kernel argument 2: int n
 
     std::cout << STR_PASSED << "auto bo_input = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(0)) (=" << krnl.group_id(0) << "))" << std::endl;
     std::cout << STR_PASSED << "auto bo_ouput = xrt::bo(my_device, size_in_bytes, XCL_BO_FLAGS_NONE, krnl.group_id(1)) (=" << krnl.group_id(1) << "))" << std::endl;
@@ -199,25 +202,25 @@ int main(int argc, char** argv) {
     std::cout << STR_INFO << "Generating Testing Data..." << std::endl;
 
 
-    data_t* software_A = new data_t[MAT_SIZE];
-    data_t* software_QT = new data_t[MAT_SIZE];
-    data_t* software_R = new data_t[MAT_SIZE];
+    data_t* software_A = new data_t[mat_size];
+    data_t* software_QT = new data_t[mat_size];
+    data_t* software_R = new data_t[mat_size];
 
-    data_t* hardware_A = new data_t[MAT_SIZE];
-    data_t* hardware_QT = new data_t[MAT_SIZE];
-    data_t* hardware_R = new data_t[MAT_SIZE];
+    data_t* hardware_A = new data_t[mat_size];
+    data_t* hardware_QT = new data_t[mat_size];
+    data_t* hardware_R = new data_t[mat_size];
 
     cout << "Generate Testing Data using Pure software implementaion" << endl;
     /////////////   Generate Testing Data using Pure software implementaion  //////////////
 
 
-    random_data_generator_array(software_A);
-    // for(int i=0; i<MAT_SIZE; i++){
+    random_data_generator_array(software_A, n);
+    // for(int i=0; i<mat_size; i++){
     //     software_A[i]=i+1;
     // }
-    eye(software_QT);
+    eye(software_QT, n);
 
-    for(int i=0; i<MAT_SIZE; i++){
+    for(int i=0; i<mat_size; i++){
         software_R[i]=software_A[i];
 
         hardware_A[i]=software_A[i];
@@ -228,27 +231,25 @@ int main(int argc, char** argv) {
     /////////////////  For software QR DCMP function   //////////////
     Matrix A, QT, R;
     A.data = software_A;
-    A.cols = N;
-    A.rows = N;
+    A.cols = n;
+    A.rows = n;
 
     QT.data = software_QT;
-    QT.cols = N;
-    QT.rows = N;
+    QT.cols = n;
+    QT.rows = n;
 
     R.data=software_R;
-    R.cols=N;
-    R.rows=N;
+    R.cols=n;
+    R.rows=n;
 
 
 
     std::cout << STR_PASSED << "Testing Data Generated" << std::endl;
 
 
-
-
     std::cout << STR_INFO << "Filling Argument Buffers with input data" << std::endl;
-    std::memcpy(bo_QT_map, hardware_QT, MAT_SIZE * sizeof(data_t));
-    std::memcpy(bo_R_map, hardware_R, MAT_SIZE * sizeof(data_t));
+    std::memcpy(bo_QT_map, hardware_QT, mat_size * sizeof(data_t));
+    std::memcpy(bo_R_map, hardware_R, mat_size * sizeof(data_t));
 
 
 
@@ -271,7 +272,7 @@ int main(int argc, char** argv) {
 
     std::cout << STR_INFO <<  "Execution of the kernel" << std::endl;
     TIMER(runTime);
-    auto run = krnl(bo_QT, bo_R);
+    auto run = krnl(bo_QT, bo_R, n);
     run.wait();
     TIMER(runTimeEnd);
     std::cout << STR_PASSED << "run.wait()" << std::endl;
@@ -285,19 +286,19 @@ int main(int argc, char** argv) {
     std::cout << STR_PASSED << "bo_QT/R.sync(XCL_BO_SYNC_BO_FROM_DEVICE)" << std::endl;
 
     // TIMING
-    printf(timing_summary, 0, N, N, 
+    printf(timing_summary, 0, n, n, 
                            ELAPSED(cpuTimeEnd, cpuTimeStart),
                            ELAPSED(syncOutputEnd, syncInputTime), 
                            ELAPSED(syncInputTimeEnd, syncInputTime), 
                            ELAPSED(runTimeEnd, runTime), 
                            ELAPSED(syncOutputEnd, syncOutputTime));
 
-    double tolerance = 1e-5*N;
+    double tolerance = 1e-5*n;
 
     std::cout << STR_INFO << "Validating QT" << std::endl;
-    validate_results(software_QT, bo_QT_map, MAT_SIZE, tolerance, true, print_errors);
+    validate_results(software_QT, bo_QT_map, mat_size, tolerance, true, print_errors, n);
     std::cout << STR_INFO << "Validating R" << std::endl;
-    validate_results(software_R, bo_R_map, MAT_SIZE, tolerance, true, print_errors);
+    validate_results(software_R, bo_R_map, mat_size, tolerance, true, print_errors, n);
 
 
 
@@ -333,7 +334,7 @@ int main(int argc, char** argv) {
 
     //     generate_star_gaussian(software_generated_input_data, MAT_ROWS, sigma, intensity, noise_stddev);
 
-    //     std::memcpy(bo_input_map, software_generated_input_data, MAT_SIZE * sizeof(cmpx_data_t));
+    //     std::memcpy(bo_input_map, software_generated_input_data, mat_size * sizeof(cmpx_data_t));
 
     //     TIMER(cpuTimeStart);
     //     angular_spectrum_propagation(software_generated_input_data, MAT_ROWS, wavelength, distance, pixel_scale);
@@ -374,7 +375,7 @@ int main(int argc, char** argv) {
     //                             ELAPSED(runTimeEnd, runTime),
     //                             ELAPSED(runTimeEnd, runTime) + ELAPSED(syncOutputTimeEnd, syncOutputTime) + ELAPSED(syncInputTimeEnd, syncInputTime));
 
-    //     validate_results(software_generated_input_data, bo_output_map, MAT_SIZE, tolerance, false, print_errors);
+    //     validate_results(software_generated_input_data, bo_output_map, mat_size, tolerance, false, print_errors, n);
     // }
 
     // device_exc_time_arithmetic_mean /= rounds;

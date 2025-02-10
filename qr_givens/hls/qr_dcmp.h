@@ -10,10 +10,12 @@
 
 using namespace std;
 
+#define MAX_N 4096
 
-#define N 128
 #define VECTOR_SIZE 16
 
+//These two used only for synthesis reports
+#define N 1024
 #define N_VECTOR N/VECTOR_SIZE
 
 
@@ -41,12 +43,12 @@ typedef hls::vector<data_t, N> row_t;
 // void stream_row_in(data_t* input_matrix, stream_t &in_stream, int row);
 // void stream_row_out(stream_t &out_stream, data_t* output_matrix, int row);
 
-void combined_stream_in(data_t* input_matrix, stream_t &in_stream, int row, int i);
-void combined_stream_out(stream_t &out_stream, data_t* output_matrix, int row, int i);
+void combined_stream_in(data_t* input_matrix, stream_t &in_stream, int row, int i, int n);
+void combined_stream_out(stream_t &out_stream, data_t* output_matrix, int row, int i, int n);
 
 
 // Top Level QR DCMP Kernel
-extern "C" void krnl_qr_dcmp(data_t *QT, data_t *R);
+extern "C" void krnl_qr_dcmp(data_t *QT, data_t *R, int n);
 
 
 

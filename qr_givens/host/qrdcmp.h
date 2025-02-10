@@ -6,15 +6,12 @@
 using namespace std;
 
 
-#define N 128
-
-
-#define MAT_SIZE (N * N)
+//Passing a command line argument now to set the below
+//#define N 64
+//#define MAT_SIZE (N * N)
 
 
 typedef float data_t;
-
-#define VECTOR_SIZE 8
 
 
 // Structure to represent a matrix
@@ -29,10 +26,10 @@ void free_matrix(Matrix* mat);
 data_t get_element(const Matrix* mat, int row, int col);
 void set_element(Matrix* mat, int row, int col, data_t value);
 void print_matrix(const Matrix* mat);
-void print_raw_matrix(data_t* mat);
+void print_raw_matrix(data_t* mat, int n);
 Matrix create_identity_matrix(int size);
-void random_data_generator_array(data_t *data);
-void eye(data_t* mat);
+void random_data_generator_array(data_t *data, int n);
+void eye(data_t* mat, int n);
 void qr_givens(Matrix* A, Matrix* QT, Matrix* R);
 
 // Top Level QR DCMP Kernel

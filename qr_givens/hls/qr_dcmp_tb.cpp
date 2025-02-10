@@ -18,7 +18,6 @@ using namespace std;
 const double TOLERANCE = 1e-5*N*N;
 
 
-
 // Structure to represent a matrix
 typedef struct {
     int rows, cols;
@@ -63,10 +62,10 @@ void print_matrix(const Matrix* mat) {
 }
 
 // Print matrix
-void print_raw_matrix(data_t* mat) {
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            printf("%.8f ", mat[(i*N)+j]);
+void print_raw_matrix(data_t* mat, int n) {
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            printf("%.8f ", mat[(i*n)+j]);
         }
         printf("\n");
     }
@@ -173,24 +172,24 @@ void qr_givens(Matrix* A, Matrix* QT, Matrix* R) {
     }
 }
 
-void random_data_generator_array(data_t *data) {
+void random_data_generator_array(data_t *data, int n) {
     mt19937 gen(1703);
     uniform_real_distribution<> dis(100.0, 1000.0);
 
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            data[i*N+j] = dis(gen);
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            data[i*n+j] = dis(gen);
         }
     }
 }
 
-void eye(data_t* mat){
-    for(int i=0; i<N; i++){
-        for(int j=0; j<N; j++){
+void eye(data_t* mat, int n){
+    for(int i=0; i<n; i++){
+        for(int j=0; j<n; j++){
             if(i!=j){
-                mat[i*N+j]=0.0;                
+                mat[i*n+j]=0.0;                
             }else{
-                mat[i*N+j]=1.0;
+                mat[i*n+j]=1.0;
             }
         }
     }
@@ -198,25 +197,28 @@ void eye(data_t* mat){
 
 
 int main() {
-    data_t* software_A = new data_t[MAT_SIZE];
-    data_t* software_QT = new data_t[MAT_SIZE];
-    data_t* software_R = new data_t[MAT_SIZE];
+    int n = 256;
+    int mat_size = n*n;
 
-    data_t* hardware_A = new data_t[MAT_SIZE];
-    data_t* hardware_QT = new data_t[MAT_SIZE];
-    data_t* hardware_R = new data_t[MAT_SIZE];
+    data_t* software_A = new data_t[mat_size];
+    data_t* software_QT = new data_t[mat_size];
+    data_t* software_R = new data_t[mat_size];
+
+    data_t* hardware_A = new data_t[mat_size];
+    data_t* hardware_QT = new data_t[mat_size];
+    data_t* hardware_R = new data_t[mat_size];
 
     cout << "Generate Testing Data using Pure software implementaion" << endl;
     /////////////   Generate Testing Data using Pure software implementaion  //////////////
 
 
-    random_data_generator_array(software_A);
-    // for(int i=0; i<MAT_SIZE; i++){
+    random_data_generator_array(software_A, n);
+    // for(int i=0; i<mat_size; i++){
     //     software_A[i]=i+1;
     // }
-    eye(software_QT);
+    eye(software_QT, n);
 
-    for(int i=0; i<MAT_SIZE; i++){
+    for(int i=0; i<mat_size; i++){
         software_R[i]=software_A[i];
 
         hardware_A[i]=software_A[i];
@@ -230,17 +232,17 @@ int main() {
     /////////////////  Call QR DCMP function   //////////////
     Matrix A, QT, R;
     A.data = software_A;
-    A.cols = N;
-    A.rows = N;
+    A.cols = n;
+    A.rows = n;
 
 
     QT.data = software_QT;
-    QT.cols = N;
-    QT.rows = N;
+    QT.cols = n;
+    QT.rows = n;
 
     R.data=software_R;
-    R.cols=N;
-    R.rows=N;
+    R.cols=n;
+    R.rows=n;
 
 
     // Perform QR decomposition
@@ -267,16 +269,16 @@ int main() {
 
     cout << "Running hardware kernel function" << endl;
     /////////////////  Run kernel   //////////////    
-    krnl_qr_dcmp(hardware_QT, hardware_R);
+    krnl_qr_dcmp(hardware_QT, hardware_R, n);
     Matrix hardware_QT_mat, hardware_R_mat;
     
     hardware_QT_mat.data = hardware_QT;
-    hardware_QT_mat.rows = N;
-    hardware_QT_mat.cols = N;
+    hardware_QT_mat.rows = n;
+    hardware_QT_mat.cols = n;
     
     hardware_R_mat.data = hardware_R;
-    hardware_R_mat.rows = N;
-    hardware_R_mat.cols = N;
+    hardware_R_mat.rows = n;
+    hardware_R_mat.cols = n;
 
     // Print results
     printf("QT:\n");

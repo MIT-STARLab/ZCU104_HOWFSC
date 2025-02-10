@@ -14,9 +14,7 @@
 #include "qrdcmp.h"
 
 using namespace std;
-const double TOLERANCE = 1e-5*N*N;
-
-
+const double TOLERANCE = 1e-2;
 
 
 // Allocate memory for a matrix
@@ -55,10 +53,10 @@ void print_matrix(const Matrix* mat) {
 }
 
 // Print matrix
-void print_raw_matrix(data_t* mat) {
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            printf("%.8f ", mat[(i*N)+j]);
+void print_raw_matrix(data_t* mat, int n) {
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            printf("%.8f ", mat[(i*n)+j]);
         }
         printf("\n");
     }
@@ -165,24 +163,24 @@ void qr_givens(Matrix* A, Matrix* QT, Matrix* R) {
     }
 }
 
-void random_data_generator_array(data_t *data) {
+void random_data_generator_array(data_t *data, int n) {
     mt19937 gen(1703);
     uniform_real_distribution<> dis(100.0, 1000.0);
 
-    for (int i = 0; i < N; ++i) {
-        for (int j = 0; j < N; ++j) {
-            data[i*N+j] = dis(gen);
+    for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < n; ++j) {
+            data[i*n+j] = dis(gen);
         }
     }
 }
 
-void eye(data_t* mat){
-    for(int i=0; i<N; i++){
-        for(int j=0; j<N; j++){
+void eye(data_t* mat, int n){
+    for(int i=0; i<n; i++){
+        for(int j=0; j<n; j++){
             if(i!=j){
-                mat[i*N+j]=0.0;                
+                mat[i*n+j]=0.0;                
             }else{
-                mat[i*N+j]=1.0;
+                mat[i*n+j]=1.0;
             }
         }
     }
