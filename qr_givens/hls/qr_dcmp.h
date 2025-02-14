@@ -10,7 +10,7 @@
 
 using namespace std;
 
-#define MAX_N 4096
+#define MAX_N 2048
 
 #define VECTOR_SIZE 16
 
@@ -43,8 +43,8 @@ typedef hls::vector<data_t, N> row_t;
 // void stream_row_in(data_t* input_matrix, stream_t &in_stream, int row);
 // void stream_row_out(stream_t &out_stream, data_t* output_matrix, int row);
 
-void combined_stream_in(data_t* input_matrix, stream_t &in_stream, int row, int i, int n);
-void combined_stream_out(stream_t &out_stream, data_t* output_matrix, int row, int i, int n);
+static void combined_stream_in(const vector_t* input_matrix, const vector_t* input_row, stream_t &in_stream, int row, int i, int n);
+static void combined_stream_out(stream_t &out_stream, vector_t* output_matrix, vector_t* output_row, int row, int i, int n);
 
 
 // Top Level QR DCMP Kernel
