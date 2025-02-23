@@ -1,7 +1,7 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 24, 2024
+ * Last modified on January 24, 2025
  * Angular Spectrum Propagation Method FPGA HLS Implementation: TEST BENCH
  */
 

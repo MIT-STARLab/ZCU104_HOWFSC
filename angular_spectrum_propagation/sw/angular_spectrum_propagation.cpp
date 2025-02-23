@@ -1,7 +1,7 @@
 /*
  * MIT STAR Lab
  * M.Subhi Abo Rdan (msubhi_a@mit.edu)
- * Last modified on January 16, 2024
+ * Last modified on January 16, 2025
  * Pure software implementations of Angular Spectrum Propagation Method to help test hardware kernels
  */
 
