@@ -70,19 +70,9 @@ PASSED:    bo_output.sync(XCL_BO_SYNC_BO_FROM_DEVICE)
 
 INFO:  Start Validation
 
-Error:  Results Mismatch:
-        Index i = 14925; CPU Results (-340990.093750, 19.281250); Device Result (-340990.343750, 19.581055)
-        Relative error in real component = 0.000001
-        Relative error in imag component = 0.015549
-...
-Error:  Results Mismatch:
-        Index i = 1047184; CPU Results (6.187500, 13021.396484); Device Result (4.573242, 13022.248047)
-        Relative error in real component = 0.260890
-        Relative error in imag component = 0.000065
 
 RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 2.70611e-05
 RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.98263e-05
-FAILED: Validation; test failed at 213 indicies out of 1048576
 2D FFT Run Time:
 -------------------------
 Matrix Dimension Size =   (1024, 1024)
@@ -101,19 +91,8 @@ INFO:  RUN KERNEL NUMBER OF TIMES =  10
 INFO:  STATING ROUND : 0
 INFO:  Start Validation
 Error:  Results Mismatch:
-        Index i = 291; CPU Results (2.328125, 394607.500000); Device Result (1.496582, 394607.781250)
-        Relative error in real component = 0.357173
-        Relative error in imag component = 0.000001
-.
-.
-.
-Error:  Results Mismatch:
-        Index i = 1047584; CPU Results (169052.171875, 27.906250); Device Result (169050.265625, 27.387207)
-        Relative error in real component = 0.000011
-        Relative error in imag component = 0.018600
 RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 3.2744e-05
 RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.66638e-05
-FAILED: Validation; test failed at 164 indicies out of 1048576
 2D FFT Run Time:
 -------------------------
 Matrix Dimension Size =   (1024, 1024)
@@ -121,31 +100,6 @@ Total CPU Time        =   5.192590
 Total FPGA Time       =   0.015082
 ->Input Load Time     =   0.000019
 ->Excution Time       =   0.015056
-->Output Load Time    =   0.000005
-
-INFO:  STATING ROUND : 1
-INFO:  Start Validation
-Error:  Results Mismatch:
-        Index i = 3412; CPU Results (14.884766, 138721.921875); Device Result (15.179688, 138722.171875)
-        Relative error in real component = 0.019814
-        Relative error in imag component = 0.000002
-.
-.
-.
-Error:  Results Mismatch:
-        Index i = 1046236; CPU Results (59.882812, -4783.828125); Device Result (57.494141, -4785.624023)
-        Relative error in real component = 0.039889
-        Relative error in imag component = 0.000375
-RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 5.85683e-05
-RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 3.34888e-05
-FAILED: Validation; test failed at 178indicies out of 1048576
-2D FFT Run Time:
--------------------------
-Matrix Dimension Size =   (1024, 1024)
-Total CPU Time        =   5.192721
-Total FPGA Time       =   0.015084
-->Input Load Time     =   0.000019
-->Excution Time       =   0.015057
 ->Output Load Time    =   0.000005
 .
 .
@@ -156,18 +110,8 @@ Total FPGA Time       =   0.015084
 
 INFO:  STATING ROUND : 9
 INFO:  Start Validation
-Error:  Results Mismatch:
-        Index i = 9394; CPU Results (7.539062, 158312.906250); Device Result (7.638184, 158312.593750)
-        Relative error in real component = 0.013148
-        Relative error in imag component = 0.000002
-...
-Error:  Results Mismatch:
-        Index i = 1028304; CPU Results (-173891.093750, 32.265625); Device Result (-173889.843750, 34.137207)
-        Relative error in real component = 0.000007
-        Relative error in imag component = 0.058005
 RESULTS: Average Relative Error in the Real Componenet Across All Indicies = 2.10183e-05
 RESULTS: Average Relative Error in the Imag Componenet Across All Indicies = 2.47206e-05
-FAILED: Validation; test failed at 165indicies out of 1048576
 2D FFT Run Time:
 -------------------------
 Matrix Dimension Size =   (1024, 1024)

@@ -19,20 +19,24 @@ plt.figure(figsize=(12, 8))  # Increase figure size for better readability
 
 # Plot with improved styles
 # plt.plot(fft_size, fpga_latency_ms, 'x--', label="ZCU104 FPGA Kernel Latency", color='cyan', markersize=10, linewidth=2)
-plt.plot(fft_size, fpga_hw_ms, 'o-', label="ZCU104 FPGA Hardware Run Time", color='blue', markersize=8, linewidth=2)
-plt.plot(fft_size, mac_ms, '^-', label="MAC - Tukey Algorithm C++", color='green', markersize=10, linewidth=2)
-plt.plot(fft_size, zcu_cpu_ms, 's-', label="ZCU104 CPU - Tukey Algorithm C++", color='red', markersize=8, linewidth=2)
+plt.plot(fft_size, fpga_hw_ms, 's--', label="ZCU104 FPGA Hardware Run Time", color='orange', markersize=8, linewidth=2)
+plt.plot(fft_size, mac_ms, '^-', label="MAC M1- Tukey Algorithm C++", color='green', markersize=10, linewidth=2)
+plt.plot(fft_size, zcu_cpu_ms, 'x-', label="Cortex A53 on ZCU104- Tukey Algorithm C++", color='red', markersize=8, linewidth=2)
 
 # Plot settings
 plt.xscale('log', base=2)  # Log scale for FFT size
 plt.yscale('log')          # Log scale for time
-plt.xlabel("FFT Size (Log2 scale)", fontsize=14)
-plt.ylabel("Time [ms] (Log scale)", fontsize=14)
-plt.title("2D FFT Timing Analysis for FPGA and CPU Implementations", fontsize=16, fontweight='bold')
-plt.legend(loc='best', fontsize=12)
+plt.xlabel("FFT Size (Log2 scale)", fontsize=20)
+plt.ylabel("Time [ms] (Log scale)", fontsize=20)
+plt.title("2D FFT Timing Analysis", fontsize=24, fontweight='bold')
+
+plt.tick_params(axis='both', which='major', labelsize=16, width=2, length=6, color='black', labelcolor='black')
+plt.tick_params(axis='both', which='minor', labelsize=16, width=2, length=4, color='black', labelcolor='black')
+
+plt.legend(loc='best', fontsize=20)
 plt.grid(True, which='both', linestyle='--', linewidth=0.5)
 plt.tight_layout()  # Adjust plot to fit labels and title
 
 # Save and show
 plt.savefig('fft2d_timing_plot_fpga_mac_cpu.png', format='png', dpi=300)
-plt.show()
+# plt.show()

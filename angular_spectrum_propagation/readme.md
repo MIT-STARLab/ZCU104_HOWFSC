@@ -4,10 +4,17 @@
 ![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/angular_spectrum_kernel_block_diagram.png)
 
 
+## Timing
+![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/ang_spec_timing_plot_fpga_mac_cpu.png)
+~ 465 times faster than CPU
+
+
+
+
 ## Hardware Deployment Results
 ![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/validation/sig1.png)
 
-~ 465 times faster than CPU
+
 
 ```sh
 zynqmp-common-20232:~$ ./angular_spectrum_host binary_container_1.xclbin 5 0                                                                                                                             
@@ -102,5 +109,5 @@ CPU  Geometric Mean Run Time              = 11.278334
 FPGA Arithmetic Mean Run Time (With Sync)  = 0.023985
 FPGA Arithmetic Mean Run Time (No   Sync)  = 0.023959
 CPU  Arithmetic Mean Run Time              = 11.278335
-**********************************************************************************
+*****************************************************************************
 ```
