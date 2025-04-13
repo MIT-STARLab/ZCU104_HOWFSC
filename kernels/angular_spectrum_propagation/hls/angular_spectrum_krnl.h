@@ -5,8 +5,8 @@
  * Angular Spectrum Propagation Method FPGA HLS Implementation: INCLUDE
  */
 
-#ifndef _H_FFT_2D_KRNL_INCLUDE_H_
-#define _H_FFT_2D_KRNL_INCLUDE_H_
+#ifndef _H_ASM_KRNL_INCLUDE_H_
+#define _H_ASM_KRNL_INCLUDE_H_
 
 // includes 
 #include <hls_stream.h>
