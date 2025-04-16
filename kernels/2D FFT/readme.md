@@ -1,10 +1,10 @@
 # 2D FFT
 
 ## Block Diagram
-![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/block_diagram_v1.png)
+![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/kernels/2D%20FFT/block_diagram_v1.png)
 
 ## Performance and Resources (Synthesis Report)
-![Synthesis Report](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/syn_rpt.png)
+![Synthesis Report](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/kernels/2D%20FFT/syn_rpt.png)
 
 
 
@@ -23,7 +23,7 @@ Testing data is generated randomly ~Unif(100, 1000)
 | 2048     | 6,429,775                   | 0.065410 seconds     | 23.538236 seconds               | 23.538236 seconds     |
 
 
-![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/2D%20FFT/timing/fft2d_timing_plot_fpga_mac_cpu.png)
+![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/kernels/2D%20FFT/timing/fft2d_timing_plot_fpga_mac_cpu.png)
 
 
 **Notes:**
@@ -31,7 +31,7 @@ Testing data is generated randomly ~Unif(100, 1000)
 - **FPGA Average Run Time (With Sync)** includes synchronization overhead.
 - **FPGA Average Run Time (No Sync)** excludes synchronization overhead.
 - **CPU Average Run Time** is the run time on the ZCU 104 CPU for the same FFT size.
-- **Mac Timing Data** are in the [FFT SW](https://github.com/MIT-STARLab/ZCU104_HOWFSC/tree/main/FFT%20SW)/timing Folder
+- **Mac Timing Data** are in the [FFT SW](https://github.com/MIT-STARLab/ZCU104_HOWFSC/tree/main/kernels/FFT%20SW)/timing Folder
 
 
 

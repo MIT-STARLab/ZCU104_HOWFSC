@@ -1,18 +1,18 @@
 # Angular Spectrum Propagation
 
 ## Design Block Diagram
-![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/angular_spectrum_kernel_block_diagram.png)
+![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/kernels/angular_spectrum_propagation/angular_spectrum_kernel_block_diagram.png)
 
 
 ## Timing
-![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/ang_spec_timing_plot_fpga_mac_cpu.png)
+![Timing](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/kernels/angular_spectrum_propagation/ang_spec_timing_plot_fpga_mac_cpu.png)
 ~ 465 times faster than CPU
 
 
 
 
 ## Hardware Deployment Results
-![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/angular_spectrum_propagation/validation/sig1.png)
+![Block Diagram](https://github.com/MIT-STARLab/ZCU104_HOWFSC/blob/main/kernels/angular_spectrum_propagation/validation/sig1.png)
 
 
 
