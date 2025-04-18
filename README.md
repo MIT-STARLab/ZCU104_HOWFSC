@@ -1,16 +1,33 @@
-# High-Order WaveFront Sensing and Control (HOWFSC) on Xilinx Zynq UltraScale+ MPSoC ZCU104
+# High-Order WaveFront Sensing and Control (HOWFSC) on Xilinx ZCU104
 
-Welcome to the High-Order WaveFront Sensing and Control (HOWFSC) project repository! This project demonstrates the implementation and Performance Evaluation of advanced wavefront sensing and control algorithms on the Xilinx Zynq UltraScale+ MPSoC ZCU104 board using High-Level Synthesis. 
+Welcome to the High-Order WaveFront Sensing and Control (HOWFSC) project repository!  
+This project demonstrates the implementation and performance evaluation of advanced wavefront sensing and control algorithms on the Xilinx Zynq UltraScale+ MPSoC ZCU104 board using High-Level Synthesis (HLS).
 
-## Control Algorithms Kernels 
-In this work, we accelerate the bottleneck operations in the Electric Field Conjugation (EFC) and Jacobian Estimation
 
-- **Reference Kernels**: A simple reference HLS implementations of vector addition and FFT kernels with both HLS and software implementations.
-Including Timing reports and block diagrams.
+## 🛰️ Overview
 
-- **2D FFT**: HLS Implementation and performance analysis of 2D FFT kernel. Including Timing reports and design.
-- **Angular Spectrum Propagation**: HLS Implementation and performance analysis of Angular Spectrum Method. Including Timing reports and design diagrams.
-- **Matrix-Vector Multiplication (MXV)**: HLS Implementation of Matrix-vector inner product kernel.
+This project focuses on accelerating computational bottlenecks in Electric Field Conjugation (EFC) and Jacobian Estimation algorithms, which are critical in high-order wavefront sensing and control systems. By leveraging HLS, we implement and optimize key computational kernels to run efficiently on the ZCU104 platform.
 
-- **MFT**: Matrix Fourier Transform (in progress)
-- **Optical Modeling**: System Integration (in progress)
+
+
+## 📁 Repository Structure
+
+```text
+ZCU104_HOWFSC/
+│
+├── kernels/                     # All HLS computational kernels including HLS code, host XRT code, test benches, sw implementations, design block diagrams, performance analysis
+│   ├── 1D FFT/                          # 1D FFT kernel + reports
+│   ├── 2D FFT/                          # 2D FFT kernel + reports
+│   ├── angular_spectrum_propagation/    # Angular Spectrum Method
+│   ├── MFT/                             # Matrix Fourier Transform  (in progress)
+│   ├── MXV/                             # Matrix-Vector Inner Product
+│   ├── QR_Givens/                       # Given's QR decomposition
+│   └── VADD/                            # Simple vector add baseline
+│
+├── accelerated_howfsc           # Full Embedded Implementation of EFC and Optical Modeling with Host Server (Kernels Integration in Progress)
+└── README.md                            # This file
+```
+
+
+## 👏 Acknowledgments
+This project is part of the NASA APRA-funded HOWFSC effort at the MIT STAR Lab

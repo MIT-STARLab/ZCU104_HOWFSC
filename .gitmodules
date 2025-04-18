@@ -1,0 +1,6 @@
+[submodule "accelerated_howfsc/embedded_howfsc_math_utils"]
+	path = accelerated_howfsc/embedded_howfsc_math_utils
+	url = https://github.com/MIT-STARLab/embedded_howfsc_math_utils
+[submodule "accelerated_howfsc/embedded_howfsc"]
+	path = accelerated_howfsc/embedded_howfsc
+	url = https://github.com/MIT-STARLab/embedded_howfsc
