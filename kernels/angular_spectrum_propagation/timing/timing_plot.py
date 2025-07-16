@@ -27,32 +27,47 @@ mac_m1_py_arth = np.array(mac_m1_py_arth) * 1000
 mac_m1_py_geom = np.array(mac_m1_py_geom) * 1000
 
 
+# Convert to log base 2
+log_n = np.log2(arr_size)
+log_time = np.log(fpga_hw_arth)  # natural log, or use np.log2(fpga_time_sec) if you want base-2
+
+# Linear fit: log(time) = a * log2(n) + b
+a, b = np.polyfit(log_n, log_time, 1)
+
+
+print("Angular Spectrum: log(time) = a * log2(n) + b")
+print(f"a (slope): {a:.3f}")
+print(f"b (intercept): {b:.3f}")
+
+print(mac_m1_py_geom/fpga_hw_geom)
+print(mac_m1_cpp_geom/fpga_hw_geom)
+print(zcu_cortex_a53_cpp_geom/fpga_hw_geom)
 
 
 
-# Plot
-plt.figure(figsize=(12, 8))  # Increase figure size for better readability
+# # Plot
+# plt.figure(figsize=(12, 8))  # Increase figure size for better readability
 
-# Plot with improved styles
-plt.plot(arr_size, mac_m1_cpp_geom, '^-', label="MAC M1 - C++", color='green', markersize=10, linewidth=2)
-plt.plot(arr_size, mac_m1_py_geom, 'o-', label="MAC M1 - Numpy",color='blue', markersize=10, linewidth=2)
-plt.plot(arr_size, fpga_hw_geom, 's--', label="ZCU104 FPGA Hardware Run Time", color='orange', markersize=10, linewidth=2)
-plt.plot(arr_size, zcu_cortex_a53_cpp_geom, 'x-', label="ZCU104 MPCPU Cortex a53 - C++", color='red', markersize=8, linewidth=2)
+# # Plot with improved styles
+# plt.plot(arr_size, mac_m1_cpp_geom, '^-', label="MAC M1 - C++", color='green', markersize=10, linewidth=2)
+# plt.plot(arr_size, mac_m1_py_geom, 'o-', label="MAC M1 - Numpy",color='blue', markersize=10, linewidth=2)
+# plt.plot(arr_size, fpga_hw_geom, 's--', label="ZCU104 FPGA Hardware Run Time", color='orange', markersize=10, linewidth=2)
+# plt.plot(arr_size, zcu_cortex_a53_cpp_geom, 'x-', label="ZCU104 MPCPU Cortex a53 - C++", color='red', markersize=8, linewidth=2)
 
-# Plot settings
-plt.xscale('log', base=2)  # Log scale for matrix size
-plt.yscale('log')          # Log scale for time
-plt.xlabel("Wavefront Array Size (Log2 scale)", fontsize=20)
-plt.ylabel("Time [ms] (Log scale)", fontsize=20)
-plt.title("Angular Spectrum Method Timing Analysis", fontsize=24, fontweight='bold')
+# # Plot settings
+# # plt.xscale('log', base=2)  # Log scale for matrix size
+# # plt.yscale('log')          # Log scale for time
+# plt.xlabel("Wavefront Array Size", fontsize=20)
+# plt.ylabel("Time [ms]", fontsize=20)
+# plt.title("Angular Spectrum Method Timing Analysis", fontsize=24, fontweight='bold')
 
-plt.tick_params(axis='both', which='major', labelsize=16, width=2, length=6, color='black', labelcolor='black')
-plt.tick_params(axis='both', which='minor', labelsize=16, width=2, length=4, color='black', labelcolor='black')
+# plt.tick_params(axis='both', which='major', labelsize=16, width=2, length=6, color='black', labelcolor='black')
+# plt.tick_params(axis='both', which='minor', labelsize=16, width=2, length=4, color='black', labelcolor='black')
 
-plt.legend(loc='best', fontsize=20)
-plt.grid(True, which='both', linestyle='--', linewidth=0.5)
-plt.tight_layout()  # Adjust plot to fit labels and title
+# plt.legend(loc='best', fontsize=20)
+# plt.grid(True, which='both', linestyle='--', linewidth=0.5)
+# plt.tight_layout()  # Adjust plot to fit labels and title
 
-# Save and show
-plt.savefig('ang_spec_timing_plot_fpga_mac_cpu.png', format='png', dpi=300)
-plt.show()
+# # Save and show
+# plt.savefig('ang_spec_timing_plot_fpga_mac_cpu_real.png', format='png', dpi=300)
+# plt.show()

@@ -1,0 +1,3 @@
+print(mac_m1_py_geom/fpga_hw_geom)
+print(mac_m1_cpp_geom/fpga_hw_geom)
+print(zcu_cortex_a53_cpp_geom/fpga_hw_geom)
